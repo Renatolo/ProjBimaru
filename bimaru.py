@@ -5,7 +5,7 @@
 # Grupo 00:
 # 00000 Nome1
 # 00000 Nome2
-
+import numpy as np
 import sys
 from search import (
     Problem,
@@ -63,7 +63,7 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        # TODO
+        
         pass
 
     # TODO: outros metodos da classe
@@ -110,4 +110,7 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    pass
+    table = np.full((10,10), '.', dtype=str)
+    np.set_printoptions(formatter={'str_kind': lambda x: x})
+    table[0][0] = 'l'
+    print(table)
