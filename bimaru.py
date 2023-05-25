@@ -37,29 +37,28 @@ class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
     def __init__(self):
-        board = np.full((10,10), '.', dtype=str)
+        self.board = np.full((10, 10), '.', dtype=str)
         np.set_printoptions(formatter={'str_kind': lambda x: x})
-        
-        self.board = board
-        print(board)
         
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        #print(self.board[row][col])
-        # TODO
-        pass
+        #falta aqui a questão de ter de devolver None se os pontos estiverem fora da grelha
+        return self.board[row+1][col], self.board[row-1][col]
+        
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
         # TODO
         pass
+    
+    def print(self):
+        print(self.board)
 
     @staticmethod
     def parse_instance():
@@ -72,7 +71,16 @@ class Board:
             lines[x] = line.split()  # Split line into elements based on spaces
             x += 1
         
-        return  board
+        board = Board()  # Create a Board instance
+        
+        num_hints = int(lines[2][0])
+        for i in range(3, 3 + num_hints):
+            row = int(lines[i][1])
+            col = int(lines[i][2])
+            value = lines[i][3]
+            board.board[row][col] = value
+        
+        return board
         
       # TODO: outros metodos da classe
 
@@ -118,13 +126,14 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    board = Board()
-    board.parse_instance()
-# Imprimir valores adjacentes
-print(board.adjacent_vertical_values(3, 3))
-print(board.adjacent_horizontal_values(3, 3))
-print(board.adjacent_vertical_values(1, 0))
-print(board.adjacent_horizontal_values(1, 0))
+    board = Board.parse_instance()
+    board.print()
+    # Imprimir valores adjacentes
+    print(board.get_value(0,0))
+    print(board.adjacent_vertical_values(3, 3))
+    print(board.adjacent_horizontal_values(3, 3))
+    print(board.adjacent_vertical_values(1, 0))
+    print(board.adjacent_horizontal_values(1, 0))
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
     #print(solution.solution())
