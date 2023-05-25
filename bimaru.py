@@ -7,6 +7,7 @@
 # 00000 Nome2
 import numpy as np
 import sys
+from sys import stdin
 from search import (
     Problem,
     Node,
@@ -35,6 +36,13 @@ class BimaruState:
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
+    def __init__(self):
+        board = np.full((10,10), '.', dtype=str)
+        np.set_printoptions(formatter={'str_kind': lambda x: x})
+        
+        self.board = board
+        print(board)
+        
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
         # TODO
@@ -43,6 +51,7 @@ class Board:
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
+        #print(self.board[row][col])
         # TODO
         pass
 
@@ -55,18 +64,17 @@ class Board:
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
-        e retorna uma instância da classe Board.
-
-        Por exemplo:
-            $ python3 bimaru.py < input_T01
-
-            > from sys import stdin
-            > line = stdin.readline().split()
-        """
+        e retorna uma instância da classe Board."""
         
-        pass
-
-    # TODO: outros metodos da classe
+        lines = stdin.readlines()
+        x = 0
+        for line in lines:
+            lines[x] = line.split()  # Split line into elements based on spaces
+            x += 1
+        
+        return  board
+        
+      # TODO: outros metodos da classe
 
 
 class Bimaru(Problem):
@@ -110,7 +118,17 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    table = np.full((10,10), '.', dtype=str)
-    np.set_printoptions(formatter={'str_kind': lambda x: x})
-    table[0][0] = 'l'
-    print(table)
+    board = Board()
+    board.parse_instance()
+# Imprimir valores adjacentes
+print(board.adjacent_vertical_values(3, 3))
+print(board.adjacent_horizontal_values(3, 3))
+print(board.adjacent_vertical_values(1, 0))
+print(board.adjacent_horizontal_values(1, 0))
+    #bimaru = Bimaru(board)
+    #solution = astar_search(bimaru)
+    #print(solution.solution())
+    #print(solution.path_cost)
+    #print(solution)
+    
+    
