@@ -48,17 +48,31 @@ class Board:
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
         #falta aqui a questão de ter de devolver None se os pontos estiverem fora da grelha
-        return self.board[row+1][col], self.board[row-1][col]
-        
+        v1 = self.board[row-1][col]
+        v2 = self.board[row+1][col]
+        if(v1=='.' or row<1):
+            v1 = None;
+        if(v2=='.' or row>8):
+            v2 = None;
+        return v1, v2
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
-    
+        v1 = self.board[row][col-1]
+        v2 = self.board[row][col +1]
+        if(v1 == '.' or col < 1):
+            v1 = None;
+        if(v2 == '.' or col > 8):
+            v2 = None
+        return v1, v2
+        
     def print(self):
-        print(self.board)
+        for i in self.board:
+            for j in i:
+                print(j, end="")
+            print()       
+        
 
     @staticmethod
     def parse_instance():
@@ -92,7 +106,7 @@ class Bimaru(Problem):
         pass
 
     def actions(self, state: BimaruState):
-        """Retorna uma lista de ações que podem ser executadas a
+        """Retorna uma lista de ações que pTodem ser executadas a
         partir do estado passado como argumento."""
         # TODO
         pass
@@ -134,6 +148,7 @@ if __name__ == "__main__":
     print(board.adjacent_horizontal_values(3, 3))
     print(board.adjacent_vertical_values(1, 0))
     print(board.adjacent_horizontal_values(1, 0))
+    print(board.adjacent_vertical_values(8, 8))
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
     #print(solution.solution())
