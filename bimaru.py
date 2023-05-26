@@ -39,6 +39,8 @@ class Board:
     def __init__(self):
         self.board = np.full((10, 10), '.', dtype=str)
         np.set_printoptions(formatter={'str_kind': lambda x: x})
+        #dicionario com os barcos que ja estao completps
+        self.completed_boats = {"couracado": 0, "cruzadores": 0, "contraturpedos": 0, "submarines": 0}
         
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -87,6 +89,8 @@ class Board:
         
         board = Board()  # Create a Board instance
         
+        board.row_array = lines[0][1:] #row hints array
+        board.col_array = lines[1][1:] #column hints array
         num_hints = int(lines[2][0])
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
@@ -149,6 +153,9 @@ if __name__ == "__main__":
     print(board.adjacent_vertical_values(1, 0))
     print(board.adjacent_horizontal_values(1, 0))
     print(board.adjacent_vertical_values(8, 8))
+    print(board.completed_boats)
+    print(board.row_array, board.col_array)
+
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
     #print(solution.solution())
