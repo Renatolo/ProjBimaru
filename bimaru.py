@@ -40,7 +40,7 @@ class Board:
         self.board = np.full((10, 10), '.', dtype=str)
         np.set_printoptions(formatter={'str_kind': lambda x: x})
         #dicionario com os barcos que ja estao completps
-        self.completed_boats = {"couracado": 0, "cruzadores": 0, "contraturpedos": 0, "submarines": 0}
+        self.completed_boats = {"couracado": 1, "cruzadores": 2, "contraturpedos": 3, "submarines": 4}
         
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -89,14 +89,18 @@ class Board:
         
         board = Board()  # Create a Board instance
         
-        board.row_array = lines[0][1:] #row hints array
-        board.col_array = lines[1][1:] #column hints array
+        board.row_array = [int(i) for i in lines[0][1:]] #row hints array
+        board.col_array = [int(i) for i in lines[1][1:]] #column hints array
         num_hints = int(lines[2][0])
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
             board.board[row][col] = value
+            board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
+            board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
+            if value == 'C':
+                board.completed_boats['submarines'] -= 1
         
         return board
         
@@ -153,8 +157,8 @@ if __name__ == "__main__":
     print(board.adjacent_vertical_values(1, 0))
     print(board.adjacent_horizontal_values(1, 0))
     print(board.adjacent_vertical_values(8, 8))
-    print(board.completed_boats)
-    print(board.row_array, board.col_array)
+    print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
+    print(board.row_array, board.col_array) #pistas das linhas e colunas
 
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
