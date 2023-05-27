@@ -39,8 +39,6 @@ class Board:
     def __init__(self):
         self.board = np.full((10, 10), '.', dtype=str)
         np.set_printoptions(formatter={'str_kind': lambda x: x})
-        #dicionario com os barcos que ja estao completps
-        self.completed_boats = {"couracado": 1, "cruzadores": 2, "contraturpedos": 3, "submarines": 4}
         
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -72,7 +70,10 @@ class Board:
     def print(self):
         for i in self.board:
             for j in i:
-                print(j, end="")
+                if (j == 'w'):
+                    print('.', end = '')
+                else:
+                    print(j, end = '')
             print()       
         
 
@@ -89,9 +90,12 @@ class Board:
         
         board = Board()  # Create a Board instance
         
+        #dicionario com os barcos que ja estao completos
+        board.completed_boats = {"couracado": 1, "cruzadores": 2, "contraturpedos": 3, "submarines": 4}
         board.row_array = [int(i) for i in lines[0][1:]] #row hints array
         board.col_array = [int(i) for i in lines[1][1:]] #column hints array
         num_hints = int(lines[2][0])
+
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
             col = int(lines[i][2])
@@ -103,7 +107,67 @@ class Board:
                 board.completed_boats['submarines'] -= 1
         
         return board
+    
+    def complete_boat(self, size: int):
+        if size == 1:
+            self.completed_boats['submarine'] -= 1
+        elif size == 2:
+            self.completed_boats['contraturpedos'] -= 1
+        elif size == 3:
+            self.completed_boats['cruzadores'] -= 1
+        else:
+            self.completed_boats['couracado'] -= 1
+    
+    def read_boat_left(self, row: int, col: int):
+        """Considera que comeca a ler duma ponta, se encontra outra ponta, entao completa um barco;
+            Retorna None se nao se garantir um barco horizontal para a esquerda"""
+        res = 1
+        pos = self.board[row][col-res]
+        while(col>=0, res<4, pos!='.', pos!='w', pos!='W'):
+            res += 1
+            pos = self.board[row][col-res]
         
+        if(res < 2):
+            return None
+        elif(self.board[row][col+1-res] == 'l' or self.board[row][col+1-res] == 'L'):
+            self.complete_boat(res)
+            return res
+    
+    def read_boat_right(self, row: int, col: int):
+        """Considera que comeca a ler duma ponta, se encontra outra ponta, entao completa um barco;
+            Retorna None se nao se garantir um barco horizontal para a direita"""
+        res = 1
+        pos = self.board[row][col+res]
+        while(col>=0, res<4, pos!='.', pos!='w', pos!='W'):
+            res += 1
+            pos = self.board[row][col-res]
+        
+        if(res < 2):
+            return None
+        elif(self.board[row][col+1-res] == 'l' or self.board[row][col+1-res] == 'L'):
+            self.complete_boat(res)
+            return res
+        
+    def read_boat_horizontal(self, row:int, col: int):
+        res = 1
+        right = False
+        left = False
+        cont = 0
+        while(col>=0, cont<4, pos!='.', pos!='w', pos!='W'):
+            res += 1
+            pos = self.board[row][col-res]
+    
+    def put_water(self, row: int, col: int):
+        self.board[row][col] = 'w'
+        adj_values = board.adjacent_horizontal_values(row, col) + board.adjacent_vertical_values(row, col)
+
+        if(adj_values[0] == 'l'):
+            self.board[row][col-1] = 'c'
+            self.complete_boat(1)
+        elif(adj_values[0] == 'm'):
+            if(board.read_boat_left(row, col-1) != None):
+                self.board[row][col-1] = 'r'
+
       # TODO: outros metodos da classe
 
 
@@ -131,6 +195,8 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
+        if(all(x > 0 for x in self.board.completed_boats.values())):
+            return True
         # TODO
         pass
 
