@@ -42,6 +42,8 @@ class Board:
         
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
+        if self.board[row][col] == '.':
+            return None
         return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
