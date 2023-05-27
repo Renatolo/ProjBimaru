@@ -131,45 +131,102 @@ class Board:
         """Verifica se ha pecas de barco para a esquerda e, caso haja, se o barco termina """
         res = 1
         pos = self.get_value(row, col-res)
-        while(col>=0, res<4, pos!='.', pos!='w', pos!='W'):
+        while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
             pos = self.get_value(row, col-res)
         
         if(res < 2):
             return (None, False)
-        return (res, self.get_value(row, col-res) == 'l' or self.get_value(row, col-res) == 'L')
+        return (res, self.get_value(row, col-res+1) == 'l' or self.get_value(row, col-res+1) == 'L')
     
     def check_boat_right(self, row: int, col: int):
         """Verifica se ha pecas de barco para a direita e, caso haja, se o barco termina """
         res = 1
         pos = self.get_value(row, col+res)
-        while(res<4, pos!='.', pos!='w', pos!='W'):
+        while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
             pos = self.get_value(row, col+res)
 
         if(res < 2):
             return (None, False)
-        return (res, self.get_value(row, col+res) == 'l' or self.get_value(row, col+res) == 'L')
+        return (res, self.get_value(row, col+res-1) == 'r' or self.get_value(row, col+res-1) == 'R')
         
     def check_boat_horizontal(self, row:int, col: int):
         """checks for an horizontal boat and returns (size, ends_left?, ends_right?)"""
         cbl = self.check_boat_left(row, col)
         cbr = self.check_boat_right(row, col)
         return (cbl[0]+cbr[0]-1, cbl[1], cbr[1])
+
+    def check_boat_up(self, row: int, col: int):
+        """Verifica se ha pecas de barco para cima e, caso haja, se o barco termina """
+        res = 1
+        pos = self.get_value(row-res, col)
+        while(res<4 and pos!='.' and pos!='w' and pos!='W'):
+            res += 1
+            pos = self.get_value(row-res, col)
         
+        if(res < 2):
+            return (None, False)
+        return (res, self.get_value(row-res+1, col) == 't' or self.get_value(row-res+1, col) == 'T')
+    
+    def check_boat_down(self, row: int, col: int):
+        """Verifica se ha pecas de barco para baixo e, caso haja, se o barco termina """
+        res = 1
+        pos = self.get_value(row+res, col)
+        while(res<4 and pos!='.' and pos!='w' and pos!='W'):
+            res += 1
+            pos = self.get_value(row+res, col)
+
+        if(res < 2):
+            return (None, False)
+        return (res, (self.get_value(row+res-1, col) == 'b' or self.get_value(row+res-1, col) == 'B'))
+        
+    def check_boat_vertical(self, row:int, col: int):
+        """checks for a vertical boat and returns (size, ends_top?, ends_bottom?)"""
+        cbu = self.check_boat_up(row, col)
+        cbd = self.check_boat_down(row, col)
+        return (cbu[0]+cbd[0]-1, cbu[1], cbd[1])
     
     def put_water(self, row: int, col: int):
         self.board[row][col] = 'w'
         adj_values = board.adjacent_horizontal_values(row, col) + board.adjacent_vertical_values(row, col)
 
         if(adj_values[0] == 'm'):
-            aux = self.check_boat_left(row, col-1) == (None, False)
-            if(aux[0] == None): #nao tem pecas de barco a direita
+            aux = self.check_boat_left(row, col-1)
+            if(aux[0] == None): #nao tem pecas de barco a esquerda
                 self.check_submarine(row, col-1)
             elif(aux[1] == True): #barco encontrado termina
                 self.complete_boat(aux[0])
+                self.board[row][col-1] = 'r'
             else: #barco encontrado nao termina
                 self.board[row][col-1] = 'r'
+        if(adj_values[1] == 'm'):
+            aux = self.check_boat_right(row, col+1)
+            if(aux[0] == None): #nao tem pecas de barco a direita
+                self.check_submarine(row, col+1)
+            elif(aux[1] == True): #barco encontrado termina
+                self.board[row][col+1] = 'l'
+                self.complete_boat(aux[0])
+            else: #barco encontrado nao termina
+                self.board[row][col+1] = 'l'
+        if(adj_values[2] == 'm'):
+            aux = self.check_boat_up(row-1, col)
+            if(aux[0] == None): #nao tem pecas de barco em cima
+                self.check_submarine(row-1, col)
+            elif(aux[1] == True): #barco encontrado termina
+                self.board[row-1][col] = 'b'
+                self.complete_boat(aux[0])
+            else: #barco encontrado nao termina
+                self.board[row-1][col] = 'b'
+        if(adj_values[3] == 'm'):
+            aux = self.check_boat_down(row+1, col)
+            if(aux[0] == None): #nao tem pecas de barco em baixo
+                self.check_submarine(row+1, col)
+            elif(aux[1] == True): #barco encontrado termina
+                self.board[row+1][col] = 't'
+                self.complete_boat(aux[0])
+            else: #barco encontrado nao termina
+                self.board[row+1][col] = 't'
 
 
       # TODO: outros metodos da classe
@@ -229,6 +286,14 @@ if __name__ == "__main__":
     print(board.adjacent_vertical_values(8, 8))
     print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
     print(board.row_array, board.col_array) #pistas das linhas e colunas
+
+    """teste de put_water"""
+    board.board[7][8] = 'm'
+    board.board[6][8] = 'm'
+    board.put_water(5, 8)
+
+    board.print()
+    print(board.completed_boats)
 
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
