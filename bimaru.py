@@ -166,6 +166,12 @@ class Board:
         """checks for an horizontal boat and returns (size, ends_left?, ends_right?)"""
         cbl = self.check_boat_left(row, col)
         cbr = self.check_boat_right(row, col)
+        if(cbl[0]==None and cbr[0]==None):
+            return (None, False, False)
+        elif(cbr[0]==None):
+            return (cbl[0], cbl[1], cbr[1])
+        elif(cbl[0]==None):
+            return (cbr[0], cbl[1], cbr[1])
         return (cbl[0]+cbr[0]-1, cbl[1], cbr[1])
 
     def check_boat_up(self, row: int, col: int):
@@ -200,6 +206,12 @@ class Board:
         """checks for a vertical boat and returns (size, ends_top?, ends_bottom?)"""
         cbu = self.check_boat_up(row, col)
         cbd = self.check_boat_down(row, col)
+        if(cbu[0]==None and cbd[0]==None):
+            return (None, False, False)
+        elif(cbd[0]==None):
+            return (cbu[0], cbu[1], cbd[1])
+        elif(cbu[0]==None):
+            return (cbd[0], cbu[1], cbd[1])
         return (cbu[0]+cbd[0]-1, cbu[1], cbd[1])
     
     def check_submarine(self, row: int, col: int):
@@ -359,9 +371,20 @@ if __name__ == "__main__":
     print(board.completed_boats)"""
 
     """teste de put_boat_piece"""
-    board.put_boat_piece(5, 8)
+    """board.put_boat_piece(5, 8)
     print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
-    print(board.row_array, board.col_array)
+    print(board.row_array, board.col_array)"""
+
+    """teste de check_boats"""
+    board.board[7][8] = 'm'
+    board.board[6][8] = 'm'
+    board.board[5][8] = 'm'
+    board.print()
+    board.put_water(4, 8)
+    print("+++++++++++++++++")
+    board.print()
+    print(board.check_boat_vertical(6, 8))
+    print(board.check_boat_vertical(5, 8))
 
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
