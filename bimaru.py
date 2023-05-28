@@ -137,6 +137,8 @@ class Board:
     def check_boat_left(self, row: int, col: int):
         """Verifica se ha pecas de barco para a esquerda e, caso haja, se o barco termina """
         res = 1
+        if(self.get_value(row, col) in ('l', 'L')):
+            return(None, True)
         pos = self.get_value(row, col-res)
         while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
@@ -149,6 +151,8 @@ class Board:
     def check_boat_right(self, row: int, col: int):
         """Verifica se ha pecas de barco para a direita e, caso haja, se o barco termina """
         res = 1
+        if(self.get_value(row, col) in ('r', 'R')):
+            return(None, True)
         pos = self.get_value(row, col+res)
         while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
@@ -167,6 +171,8 @@ class Board:
     def check_boat_up(self, row: int, col: int):
         """Verifica se ha pecas de barco para cima e, caso haja, se o barco termina """
         res = 1
+        if(self.get_value(row, col) in ('t', 'T')):
+            return(None, True)
         pos = self.get_value(row-res, col)
         while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
@@ -179,6 +185,8 @@ class Board:
     def check_boat_down(self, row: int, col: int):
         """Verifica se ha pecas de barco para baixo e, caso haja, se o barco termina """
         res = 1
+        if(self.get_value(row, col) in ('b', 'B')):
+            return(None, True)
         pos = self.get_value(row+res, col)
         while(res<4 and pos!='.' and pos!='w' and pos!='W'):
             res += 1
