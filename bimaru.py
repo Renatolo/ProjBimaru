@@ -116,7 +116,7 @@ class Board:
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
-            board.board[row][col] = value
+            board.board[row][col] = value #atualiza o boardgame com as hints iniciais
             board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
             board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
             if value == 'C':
