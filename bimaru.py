@@ -60,19 +60,26 @@ class Board:
             v1 = self.board[row-1][col]
             v2 = self.board[row+1][col]
         if(v1=='.'):
-            v1 = None;
+            v1 = None
         if(v2=='.'):
-            v2 = None;
+            v2 = None
         return v1, v2
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        v1 = self.board[row][col-1]
-        v2 = self.board[row][col +1]
-        if(v1 == '.' or col < 1):
-            v1 = None;
-        if(v2 == '.' or col > 8):
+        if(col<1):
+            v1 = 'w'
+            v2 = self.board[row][col+1]
+        elif(col>8):
+            v2 = 'w'
+            v1 = self.board[row][col-1]
+        else:
+            v1 = self.board[row][col-1]
+            v2 = self.board[row][col+1]
+        if(v1=='.'):
+            v1 = None
+        if(v2=='.'):
             v2 = None
         return v1, v2
         
@@ -187,6 +194,11 @@ class Board:
         cbd = self.check_boat_down(row, col)
         return (cbu[0]+cbd[0]-1, cbu[1], cbd[1])
     
+    def check_submarine(self, row: int, col: int):
+        if(all(x == 'w' for x in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values))):
+            self.board[row][col] = 'c'
+        self.complete_boat(1)
+    
     def put_water(self, row: int, col: int):
         self.board[row][col] = 'w'
         adj_values = board.adjacent_horizontal_values(row, col) + board.adjacent_vertical_values(row, col)
@@ -227,7 +239,50 @@ class Board:
                 self.complete_boat(aux[0])
             else: #barco encontrado nao termina
                 self.board[row+1][col] = 't'
+    
+    def check_if_corner(self, row: int, col: int):
+        if(self.board[row][col] in ('r', 'R', 'l', 'L', 't', 'T', 'b', 'T')):
+            return True
+        adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
 
+        cont = 0
+        for x in adj_pos:
+            if(x == 'w' or x == 'W'):
+                cont += 1
+            else:
+                aux = cont
+                break
+        if(cont == 3 and adj_pos[aux] != '.'):
+            pos_aux = ('r', 'l', 'b', 't')
+            self.board[row][col] = pos_aux[aux]
+            return True
+        elif(cont == 3 and adj_pos[aux] == 'c'):
+            pos_aux1 = ()
+            self.check_if_corner()
+        return False
+    
+    def put_boat_piece(self, row: int, col: int):
+        corners = (self.get_value(row-1, col-1), self.get_value(row-1, col+1), self.get_value(row+1, col-1), self.get_value(row+1, col+1))
+        if(corners[0]!='w' and corners[0]!='W'):
+            self.put_water(row-1, col-1)
+        if(corners[1]!='w' and corners[1]!='W'):
+            self.put_water(row-1, col+1)
+        if(corners[2]!='w' and corners[2]!='W'):
+            self.put_water(row+1, col-1)
+        if(corners[3]!='w' and corners[3]!='W'):
+            self.put_water(row+1, col+1)
+        
+        self.row_array[row] -= 1
+        self.col_array[col] -= 1
+
+        self.check_if_corner(row, col)
+        self.check_adj_corner(row, col)
+
+        horiz = self.check_boat_horizontal(row, col)
+        vert = self.check_boat_vertical(row, col)
+        
+        if(horiz[0]==vert[0] and vert[0]==None):
+            self.check_submarine(row, col)
 
       # TODO: outros metodos da classe
 
@@ -256,7 +311,7 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        if(all(x > 0 for x in self.board.completed_boats.values())):
+        if(all(x == 0 for x in self.board.completed_boats.values())):
             return True
         # TODO
         pass
@@ -288,12 +343,17 @@ if __name__ == "__main__":
     print(board.row_array, board.col_array) #pistas das linhas e colunas
 
     """teste de put_water"""
-    board.board[7][8] = 'm'
+    """board.board[7][8] = 'm'
     board.board[6][8] = 'm'
     board.put_water(5, 8)
 
     board.print()
-    print(board.completed_boats)
+    print(board.completed_boats)"""
+
+    """teste de put_boat_piece"""
+    board.put_boat_piece(5, 8)
+    print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
+    print(board.row_array, board.col_array)
 
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
@@ -302,3 +362,4 @@ if __name__ == "__main__":
     #print(solution)
     
     
+"""falta check_new_corners e fazer com que check_boat_vert/horiz aceitem barcos com corner na pos inicial"""
