@@ -128,7 +128,7 @@ class Board:
     
     def complete_boat(self, size: int):
         if size == 1:
-            self.completed_boats['submarine'] -= 1
+            self.completed_boats['submarines'] -= 1
         elif size == 2:
             self.completed_boats['contratorpedeiros'] -= 1
         elif size == 3:
@@ -217,9 +217,10 @@ class Board:
         return (cbu[0]+cbd[0]-1, cbu[1], cbd[1])
     
     def check_submarine(self, row: int, col: int):
-        if(all(x == 'w' for x in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values))):
+        print("DEBUG")
+        if(all(x == 'w' for x in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)))):
             self.board[row][col] = 'c'
-        self.complete_boat(1)
+            self.complete_boat(1)
     
     def put_water(self, row: int, col: int):
         self.board[row][col] = 'w'
@@ -263,24 +264,21 @@ class Board:
                 self.board[row+1][col] = 't'
     
     def check_if_corner(self, row: int, col: int):
-        if(self.board[row][col] in ('r', 'R', 'l', 'L', 't', 'T', 'b', 'T')):
+        """checks if a boat piece should be a corner"""
+        if(self.board[row][col] not in ('m', 'M')):
             return True
         adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
 
         cont = 0
+        aux = 1
         for x in adj_pos:
-            if(x == 'w' or x == 'W'):
-                cont += 1
+            if(x not in ('w', 'W', '.') and adj_pos[cont+aux] in ('w', 'W')):
+                pos_aux = ('r', 'l', 'b', 't')
+                self.board[row][col] = pos_aux[cont]
+                return True
             else:
-                aux = cont
-                break
-        if(cont == 3 and adj_pos[aux] != '.'):
-            pos_aux = ('r', 'l', 'b', 't')
-            self.board[row][col] = pos_aux[aux]
-            return True
-        elif(cont == 3 and adj_pos[aux] == 'c'):
-            pos_aux1 = ()
-            self.check_if_corner()
+                cont += 1
+                aux *= -1
         return False
     
     def put_boat_piece(self, row: int, col: int):
@@ -297,8 +295,10 @@ class Board:
         self.row_array[row] -= 1
         self.col_array[col] -= 1
 
+        self.board[row][col] = 'm'
+
         self.check_if_corner(row, col)
-        self.check_adj_corner(row, col)
+        #self.check_adj_corner(row, col)
 
         horiz = self.check_boat_horizontal(row, col)
         vert = self.check_boat_vertical(row, col)
@@ -373,9 +373,14 @@ if __name__ == "__main__":
     print(board.completed_boats)"""
 
     """teste de put_boat_piece"""
-    """board.put_boat_piece(5, 8)
+    board.put_water(5, 9)
+    board.board[5][7] = 'm'
+    board.put_boat_piece(5, 8)
+    board.put_water(5, 6)
     print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
-    print(board.row_array, board.col_array)"""
+    print(board.row_array, board.col_array)
+    board.print()
+    print(board.completed_boats)
 
     """teste de check_boats"""
     """board.board[7][8] = 'm'
