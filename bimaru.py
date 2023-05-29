@@ -376,7 +376,7 @@ if __name__ == "__main__":
     print(board.row_array, board.col_array)"""
 
     """teste de check_boats"""
-    board.board[7][8] = 'm'
+    """board.board[7][8] = 'm'
     board.board[6][8] = 'm'
     board.board[5][8] = 'm'
     board.print()
@@ -384,7 +384,7 @@ if __name__ == "__main__":
     print("+++++++++++++++++")
     board.print()
     print(board.check_boat_vertical(6, 8))
-    print(board.check_boat_vertical(5, 8))
+    print(board.check_boat_vertical(5, 8))"""
 
     #bimaru = Bimaru(board)
     #solution = astar_search(bimaru)
@@ -393,4 +393,4 @@ if __name__ == "__main__":
     #print(solution)
     
     
-"""falta check_new_corners e fazer com que check_boat_vert/horiz aceitem barcos com corner na pos inicial"""
+"""falta check_new_corners"""
