@@ -49,7 +49,6 @@ class Board:
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        #falta aqui a questão de ter de devolver None se os pontos estiverem fora da grelha
         if(row<1):
             v1 = 'w'
             v2 = self.board[row+1][col]
@@ -107,7 +106,10 @@ class Board:
         board = Board()  # Create a Board instance
         
         #dicionario com os barcos que ja estao completos
-        board.completed_boats = {"couracado": 1, "cruzadores": 2, "contratorpedeiros": 3, "submarines": 4}
+        board.completed_boats = {"couracado": 1, 
+                                 "cruzadores": 2, 
+                                 "contratorpedeiros": 3,
+                                 "submarines": 4}
         board.row_array = [int(i) for i in lines[0][1:]] #row hints array
         board.col_array = [int(i) for i in lines[1][1:]] #column hints array
         num_hints = int(lines[2][0])
@@ -116,7 +118,7 @@ class Board:
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
-            board.board[row][col] = value
+            board.board[row][col] = value #atualiza o boardgame com as hints iniciais
             board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
             board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
             if value == 'C':
