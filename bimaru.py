@@ -85,9 +85,9 @@ class Board:
     def print(self):
         for i in self.board:
             for j in i:
-                if (j == 'w'):
-                    print('.', end = '')
-                else:
+                #if (j == 'w'):
+                #    print('.', end = '')
+                #else:
                     print(j, end = '')
             print()       
         
@@ -113,18 +113,62 @@ class Board:
         board.row_array = [int(i) for i in lines[0][1:]] #row hints array
         board.col_array = [int(i) for i in lines[1][1:]] #column hints array
         num_hints = int(lines[2][0])
-
+        
+        print(board.row_array, board.col_array)
+        
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
+            board.process_hints(row, col, value)
             board.board[row][col] = value #atualiza o boardgame com as hints iniciais
-            board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
-            board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
+            if value != 'W':
+                board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
+                board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
             if value == 'C':
                 board.completed_boats['submarines'] -= 1
         
+        
+        board.fill_line_with_water(board.row_array, board.col_array)
+        
+        
         return board
+ 
+    def process_hints(self, row:int, col:int, hint:str):
+        self.put_water(row-1, col-1)
+        self.put_water(row-1, col+1)
+        self.put_water(row+1, col-1)
+        self.put_water(row+1, col+1)
+        if hint == 'R':
+            self.put_boat_piece(row, col-1)
+        else:
+            self.put_water(row, col-1)
+        if hint == 'L':
+            self.put_boat_piece(row, col+1)
+        else:
+            self.put_water(row, col+1)
+        if hint == 'T':
+            self.put_boat_piece(row+1, col)
+        else:
+            self.put_water(row+1, col)
+        if hint == 'B':
+            self.put_boat_piece(row-1, col)
+        else:
+            self.put_water(row-1, col) 
+            
+
+    def fill_line_with_water(self, row_ints:list, col_hints:list):
+        for i in range(10):
+            if self.row_array[i] == 0:
+                for j in range(10):
+                    if self.get_value(i, j) == '.':
+                        self.board[i][j] = 'w'
+            if self.col_array[i] == 0:
+                for z in range(10):
+                    if self.get_value(z, i) == '.':
+                        self.board[z][i] = 'w'
+        return self.board
+    
     
     def complete_boat(self, size: int):
         if size == 1:
@@ -217,15 +261,18 @@ class Board:
         return (cbu[0]+cbd[0]-1, cbu[1], cbd[1])
     
     def check_submarine(self, row: int, col: int):
-        print("DEBUG")
         if(all(x == 'w' for x in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)))):
             self.board[row][col] = 'c'
             self.complete_boat(1)
     
     def put_water(self, row: int, col: int):
+    
+        if self.get_value(row, col) in ('w', 'W'):
+            return 
+            
         self.board[row][col] = 'w'
-        adj_values = board.adjacent_horizontal_values(row, col) + board.adjacent_vertical_values(row, col)
-
+        adj_values = self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)
+    
         if(adj_values[0] == 'm'):
             aux = self.check_boat_left(row, col-1)
             if(aux[0] == None): #nao tem pecas de barco a esquerda
@@ -282,6 +329,8 @@ class Board:
         return False
     
     def put_boat_piece(self, row: int, col: int):
+        if self.get_value(row, col) in ('w', 'W'):
+            return
         corners = (self.get_value(row-1, col-1), self.get_value(row-1, col+1), self.get_value(row+1, col-1), self.get_value(row+1, col+1))
         if(corners[0]!='w' and corners[0]!='W'):
             self.put_water(row-1, col-1)
@@ -355,12 +404,13 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     board.print()
     # Imprimir valores adjacentes
-    print(board.get_value(0,0))
+    """print(board.get_value(0,0))
     print(board.adjacent_vertical_values(3, 3))
     print(board.adjacent_horizontal_values(3, 3))
     print(board.adjacent_vertical_values(1, 0))
     print(board.adjacent_horizontal_values(1, 0))
     print(board.adjacent_vertical_values(8, 8))
+    """
     print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
     print(board.row_array, board.col_array) #pistas das linhas e colunas
 
@@ -372,7 +422,7 @@ if __name__ == "__main__":
     board.print()
     print(board.completed_boats)"""
 
-    """teste de put_boat_piece"""
+    """teste de put_boat_piece
     board.put_water(5, 9)
     board.board[5][7] = 'm'
     board.put_boat_piece(5, 8)
@@ -380,10 +430,10 @@ if __name__ == "__main__":
     print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
     print(board.row_array, board.col_array)
     board.print()
-    print(board.completed_boats)
+    print(board.completed_boats)"""
 
-    """teste de check_boats"""
-    """board.board[7][8] = 'm'
+    """teste de check_boats
+    board.board[7][8] = 'm'
     board.board[6][8] = 'm'
     board.board[5][8] = 'm'
     board.print()
