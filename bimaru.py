@@ -85,9 +85,9 @@ class Board:
     def print(self):
         for i in self.board:
             for j in i:
-                #if (j == 'w'):
-                #    print('.', end = '')
-                #else:
+                if (j == 'w'):
+                    print('.', end = '')
+                else:
                     print(j, end = '')
             print()       
         
@@ -129,7 +129,7 @@ class Board:
                 board.completed_boats['submarines'] -= 1
         
         
-        board.fill_line_with_water(board.row_array, board.col_array)
+        #board.fill_line_with_water(board.row_array, board.col_array)
         
         
         return board
@@ -330,10 +330,23 @@ class Board:
                 cont += 1
                 aux *= -1
         return False
+
+    def check_adj_corner(self, row: int, col: int):
+        pos = self.get_value(row, col)
+        if(pos == 'r' and self.get_value(row, col-2) in ('w', 'W') and self.get_value(row, col-1) == 'c'):
+            self.board[row][col-1] = 'l'
+        elif(pos == 'l' and self.get_value(row, col+2) in ('w', 'W') and self.get_value(row, col+1) == 'c'):
+            self.board[row][col+1] = 'r'
+        elif(pos == 'b' and self.get_value(row-2, col) in ('w', 'W') and self.get_value(row-1, col) == 'c'):
+            self.board[row-1][col] = 't'
+        elif(pos == 't' and self.get_value(row+2, col) in ('w', 'W') and self.get_value(row+1, col) == 'c'):
+            self.board[row+1][col] = 'b'
     
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) in ('w', 'W'):
             return
+        
+        #places water in corners
         corners = (self.get_value(row-1, col-1), self.get_value(row-1, col+1), self.get_value(row+1, col-1), self.get_value(row+1, col+1))
         if(corners[0]!='w' and corners[0]!='W'):
             self.put_water(row-1, col-1)
@@ -344,13 +357,14 @@ class Board:
         if(corners[3]!='w' and corners[3]!='W'):
             self.put_water(row+1, col+1)
         
+        #update row/col hint values
         self.row_array[row] -= 1
         self.col_array[col] -= 1
 
         self.board[row][col] = 'm'
 
         self.check_if_corner(row, col)
-        #self.check_adj_corner(row, col)
+        self.check_adj_corner(row, col)
 
         horiz = self.check_boat_horizontal(row, col)
         vert = self.check_boat_vertical(row, col)
@@ -425,11 +439,11 @@ if __name__ == "__main__":
     board.print()
     print(board.completed_boats)"""
 
-    """teste de put_boat_piece
-    board.put_water(5, 9)
-    board.board[5][7] = 'm'
+    """teste de put_boat_piece"""
+    """board.put_water(6, 8)
     board.put_boat_piece(5, 8)
-    board.put_water(5, 6)
+    board.put_water(3, 8)
+    board.put_boat_piece(4, 8)
     print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
     print(board.row_array, board.col_array)
     board.print()
@@ -453,4 +467,4 @@ if __name__ == "__main__":
     #print(solution)
     
     
-"""falta check_new_corners"""
+"""verificacao de boat piece ter tamanho do maior barco possivel -> completa barco"""
