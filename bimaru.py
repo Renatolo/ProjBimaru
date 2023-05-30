@@ -129,7 +129,7 @@ class Board:
                 board.completed_boats['submarines'] -= 1
         
         
-        #board.fill_line_with_water(board.row_array, board.col_array)
+        board.fill_line_with_water(board.row_array, board.col_array)
         
         
         return board
@@ -165,11 +165,11 @@ class Board:
             if self.row_array[i] == 0:
                 for j in range(10):
                     if self.get_value(i, j) == '.':
-                        self.board[i][j] = 'w'
+                        self.put_water(i, j)
             if self.col_array[i] == 0:
                 for z in range(10):
                     if self.get_value(z, i) == '.':
-                        self.board[z][i] = 'w'
+                        self.put_water(z, i)
         return self.board
     
     
@@ -430,6 +430,7 @@ if __name__ == "__main__":
     """
     print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
     print(board.row_array, board.col_array) #pistas das linhas e colunas
+    print(board.get_value(6, 8))
 
     """teste de put_water"""
     """board.board[7][8] = 'm'
