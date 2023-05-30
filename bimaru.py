@@ -139,6 +139,9 @@ class Board:
         self.put_water(row-1, col+1)
         self.put_water(row+1, col-1)
         self.put_water(row+1, col+1)
+        if hint == 'M':
+            #process_M(...)
+            return
         if hint == 'R':
             self.put_boat_piece(row, col-1)
         else:
