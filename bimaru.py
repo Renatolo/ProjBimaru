@@ -121,8 +121,6 @@ class Board:
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
-            board.board[row][col] = value #atualiza o boardgame com as hints iniciais
-            board.process_hints(row, col, value)
             if value != 'W':
                 board.process_hints(row, col, value)
             else:
@@ -134,39 +132,53 @@ class Board:
         return board
  
     def process_hints(self, row:int, col:int, hint:str):
-        self.row_array[row] -= 1
-        self.col_array[col] -= 1
-        self.empty_row_array[row] -= 1
-        self.empty_col_array[col] -= 1
-        #places water in the corners
-        self.put_water(row-1, col-1)
-        self.put_water(row-1, col+1)
-        self.put_water(row+1, col-1)
-        self.put_water(row+1, col+1)
+        if(self.get_value(row, col) == '.'): #checks if it was previously filled with another hint
+            #updates row/col values
+            self.row_array[row] -= 1
+            self.col_array[col] -= 1
+            self.empty_row_array[row] -= 1
+            self.empty_col_array[col] -= 1
+            #places water in the corners
+            self.put_water(row-1, col-1)
+            self.put_water(row-1, col+1)
+            self.put_water(row+1, col-1)
+            self.put_water(row+1, col+1)
+        self.board[row][col] = hint
+
         if hint == 'M': # 'M' clues wont be processed during parsing
-            board.M_list.append((row, col))
+            self.M_list.append((row, col))
             return
         if hint == 'R':
-            if self.get_value(row, col) == '.':
+            aux1 = self.get_value(row, col-1)
+            if aux1 == '.':
                 self.put_boat_piece(row, col-1)
+            elif aux1 == 'L':
+                self.complete_boat(2)
+            elif aux1 == 'M':
+                aux2 = self.get_value(row, col-2)
+                if aux2 == '.':
+                    self.put_boat_piece(row, col-2)
+                elif aux2 == 'L':
+                    
+
         else:
             self.put_water(row, col-1)
         if hint == 'L':
-            if self.get_value(row, col) == '.':
+            if self.get_value(row, col+1) == '.':
                 self.put_boat_piece(row, col+1)
         else:
             self.put_water(row, col+1)
-        if hint == 'T':
-            if self.get_value(row, col) == '.':
+        if hint == 'B':
+            if self.get_value(row-1, col) == '.':
                 self.put_boat_piece(row-1, col)
         else:
-            self.put_water(row+1, col)
-        if hint == 'B':
-            if self.get_value(row, col) == '.':
+            self.put_water(row-1, col)
+        if hint == 'T':
+            if self.get_value(row+1, col) == '.':
                 self.put_boat_piece(row+1, col)
         else:
             self.complete_boat(1)
-            self.put_water(row-1, col) 
+            self.put_water(row+1, col)
             
 
     def fill_completed_lines_with_water(self):
