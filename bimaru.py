@@ -116,52 +116,60 @@ class Board:
         board.empty_col_array = 10*[10] #CORRIGIR
         num_hints = int(lines[2][0])
         board.M_list = []
-        print(board.row_array, board.col_array)
         
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
             col = int(lines[i][2])
             value = lines[i][3]
-            board.process_hints(row, col, value)
             board.board[row][col] = value #atualiza o boardgame com as hints iniciais
+            board.process_hints(row, col, value)
             if value != 'W':
-                board.row_array[row] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na linha
-                board.col_array[col] -= 1 #atualiza o numero de pecas de barco que ainda faltam marcar na coluna
-            if value == 'C':
-                board.completed_boats['submarines'] -= 1
-            elif value == 'M':
-                board.M_list.append((row, col))
+                board.process_hints(row, col, value)
+            else:
+                board.row_array[row] -= 1
+                board.col_array[col] -= 1
+                board.board[row][col] = value
                 
-        board.fill_line_with_water(board.row_array, board.col_array)
+        board.fill_line_with_water()
         return board
  
     def process_hints(self, row:int, col:int, hint:str):
+        self.row_array[row] -= 1
+        self.col_array[col] -= 1
+        self.empty_row_array[row] -= 1
+        self.empty_col_array[col] -= 1
+        #places water in the corners
         self.put_water(row-1, col-1)
         self.put_water(row-1, col+1)
         self.put_water(row+1, col-1)
         self.put_water(row+1, col+1)
-        if hint == 'M':
-            #process_M(...)
+        if hint == 'M': # 'M' clues wont be processed during parsing
+            board.M_list.append((row, col))
             return
         if hint == 'R':
-            self.put_boat_piece(row, col-1)
+            if self.get_value(row, col) == '.':
+                self.put_boat_piece(row, col-1)
         else:
             self.put_water(row, col-1)
         if hint == 'L':
-            self.put_boat_piece(row, col+1)
+            if self.get_value(row, col) == '.':
+                self.put_boat_piece(row, col+1)
         else:
             self.put_water(row, col+1)
         if hint == 'T':
-            self.put_boat_piece(row+1, col)
+            if self.get_value(row, col) == '.':
+                self.put_boat_piece(row-1, col)
         else:
             self.put_water(row+1, col)
         if hint == 'B':
-            self.put_boat_piece(row-1, col)
+            if self.get_value(row, col) == '.':
+                self.put_boat_piece(row+1, col)
         else:
+            self.complete_boat(1)
             self.put_water(row-1, col) 
             
 
-    def fill_line_with_water(self, row_ints:list, col_hints:list):
+    def fill_completed_lines_with_water(self):
         for i in range(10):
             if self.row_array[i] == 0:
                 for j in range(10):
@@ -469,4 +477,5 @@ if __name__ == "__main__":
     #print(solution)
     
     
-"""verificacao de boat piece ter tamanho do maior barco possivel -> completa barco"""
+"""verificacao de boat piece ter tamanho do maior barco possivel -> completa barco
+completar o process hints por else nos sub if.... condicao em que hints se *intersetam*"""
