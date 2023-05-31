@@ -130,7 +130,7 @@ class Board:
                 board.col_array[col] -= 1
                 board.board[row][col] = value
                 
-        board.fill_line_with_water()
+        board.fill_completed_lines_with_water()
         return board
  
     def process_hints(self, row:int, col:int, hint:str):
