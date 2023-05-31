@@ -122,7 +122,7 @@ class Board:
             col = int(lines[i][2])
             value = lines[i][3]
             if value != 'W':
-                board.process_hints(row, col, value)
+                board.process_hint(row, col, value)
             else:
                 board.row_array[row] -= 1
                 board.col_array[col] -= 1
@@ -131,7 +131,7 @@ class Board:
         board.fill_completed_lines_with_water()
         return board
  
-    def process_hints(self, row:int, col:int, hint:str):
+    def process_hint(self, row:int, col:int, hint:str):
         if(self.get_value(row, col) == '.'): #checks if it was previously filled with another hint
             #updates row/col values
             self.row_array[row] -= 1
@@ -151,31 +151,95 @@ class Board:
         if hint == 'R':
             aux1 = self.get_value(row, col-1)
             if aux1 == '.':
-                self.put_boat_piece(row, col-1)
-            elif aux1 == 'L':
+                aux2 = self.get_value(row, col-2)
+                if aux2 == '.': # caso ..R ou Lm.R
+                    self.put_boat_piece(row, col-1)
+                else: # caso .M.R
+                    self.put_boat_piece(row, col-1)
+                    self.put_boat_piece(row, col-3)
+            elif aux1 == 'L': # caso LR
                 self.complete_boat(2)
             elif aux1 == 'M':
                 aux2 = self.get_value(row, col-2)
-                if aux2 == '.':
+                if aux2 == '.': # caso .MR
                     self.put_boat_piece(row, col-2)
-                elif aux2 == 'L':
-                    
-
-        else:
-            self.put_water(row, col-1)
-        if hint == 'L':
-            if self.get_value(row, col+1) == '.':
-                self.put_boat_piece(row, col+1)
-        else:
-            self.put_water(row, col+1)
-        if hint == 'B':
-            if self.get_value(row-1, col) == '.':
-                self.put_boat_piece(row-1, col)
-        else:
-            self.put_water(row-1, col)
-        if hint == 'T':
-            if self.get_value(row+1, col) == '.':
-                self.put_boat_piece(row+1, col)
+                elif aux2 == 'L': #caso LMR
+                    self.complete_boat(3)
+            elif aux1 == 'm':
+                aux2 = self.get_value(row, col-2)
+                if aux2 == 'L': # caso LmR
+                    self.complete_boat(3)
+                else: # caso LMmR
+                    self.complete_boat(4)
+        elif hint == 'L':
+            aux1 = self.get_value(row, col+1)
+            if aux1 == '.':
+                aux2 = self.get_value(row, col+2)
+                if aux2 == '.': # caso L.. ou L.mR
+                    self.put_boat_piece(row, col+1)
+                else: # caso L.M.
+                    self.put_boat_piece(row, col+1)
+                    self.put_boat_piece(row, col+3)
+            elif aux1 == 'R': # caso LR
+                self.complete_boat(2)
+            elif aux1 == 'M':
+                aux2 = self.get_value(row, col+2)
+                if aux2 == '.': # caso LM.
+                    self.put_boat_piece(row, col+2)
+                elif aux2 == 'R': #caso LMR
+                    self.complete_boat(3)
+            elif aux1 == 'm':
+                aux2 = self.get_value(row, col+2)
+                if aux2 == 'R': # caso LmR
+                    self.complete_boat(3)
+                else: # caso LmMR
+                    self.complete_boat(4)
+        elif hint == 'B':
+            aux1 = self.get_value(row-1, col)
+            if aux1 == '.':
+                aux2 = self.get_value(row-2, col)
+                if aux2 == '.': # caso ..B ou Tm.B
+                    self.put_boat_piece(row-1, col)
+                else: # caso .M.R
+                    self.put_boat_piece(row-1, col)
+                    self.put_boat_piece(row-3, col)
+            elif aux1 == 'T': # caso TB
+                self.complete_boat(2)
+            elif aux1 == 'M':
+                aux2 = self.get_value(row-2, col)
+                if aux2 == '.': # caso .MB
+                    self.put_boat_piece(row-2, col)
+                elif aux2 == 'T': #caso TMB
+                    self.complete_boat(3)
+            elif aux1 == 'm':
+                aux2 = self.get_value(row-2, col)
+                if aux2 == 'T': # caso TmB
+                    self.complete_boat(3)
+                else: # caso TMmB
+                    self.complete_boat(4)
+        elif hint == 'T':
+            aux1 = self.get_value(row+1, col)
+            if aux1 == '.':
+                aux2 = self.get_value(row+2, col)
+                if aux2 == '.': # caso T.. ou T.mB
+                    self.put_boat_piece(row+1, col)
+                else: # caso .M.R
+                    self.put_boat_piece(row+1, col)
+                    self.put_boat_piece(row+3, col)
+            elif aux1 == 'B': # caso TB
+                self.complete_boat(2)
+            elif aux1 == 'M':
+                aux2 = self.get_value(row+2, col)
+                if aux2 == '.': # caso TM.
+                    self.put_boat_piece(row+2, col)
+                elif aux2 == 'B': #caso TMB
+                    self.complete_boat(3)
+            elif aux1 == 'm':
+                aux2 = self.get_value(row+2, col)
+                if aux2 == 'B': # caso TmB
+                    self.complete_boat(3)
+                else: # caso TmMB
+                    self.complete_boat(4)
         else:
             self.complete_boat(1)
             self.put_water(row+1, col)
@@ -335,7 +399,7 @@ class Board:
                 self.board[row+1][col] = 't'
     
     def check_if_corner(self, row: int, col: int):
-        """checks if a boat piece should be a corner"""
+        """checks if a boat piece should be a corner, if so, it turns it into the respective one"""
         if(self.board[row][col] not in ('m', 'M')):
             return True
         adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
