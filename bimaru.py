@@ -146,6 +146,7 @@ class Board:
         self.board[row][col] = hint
 
         if hint == 'M': # 'M' clues wont be processed during parsing
+            adj_values = (self.adjacent_horizontal_values(), self.adjacent_vertical_values())
             self.M_list.append((row, col))
             return
         if hint == 'R':
