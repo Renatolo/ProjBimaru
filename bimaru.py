@@ -58,10 +58,6 @@ class Board:
         else:
             v1 = self.board[row-1][col]
             v2 = self.board[row+1][col]
-        if(v1=='.'):
-            v1 = None
-        if(v2=='.'):
-            v2 = None
         return v1, v2
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
@@ -76,10 +72,6 @@ class Board:
         else:
             v1 = self.board[row][col-1]
             v2 = self.board[row][col+1]
-        if(v1=='.'):
-            v1 = None
-        if(v2=='.'):
-            v2 = None
         return v1, v2
         
     def print(self):
@@ -128,7 +120,7 @@ class Board:
                 board.empty_col_array[col] -= 1
                 board.board[row][col] = value
                 
-        board.fill_completed_lines_with_water()
+        #board.fill_completed_lines_with_water()
         return board
  
     def process_hint(self, row:int, col:int, hint:str):
@@ -260,6 +252,10 @@ class Board:
                 else: # caso TmMB
                     self.complete_boat(4)
         else:
+            self.put_water(row, col-1)
+            self.put_water(row, col+1)
+            self.put_water(row-1, col)
+            self.put_water(row+1, col)
             self.complete_boat(1)
     
     def process_M_adj(self, row: int, col: int, dir :int):
@@ -484,7 +480,7 @@ class Board:
             return 4
         elif boat_name['cruzadores'] > 0:
             return 3
-        elif boat_name['contratorpedeiro'] > 0:
+        elif boat_name['contratorpedeiros'] > 0:
             return 2
         return 1
     
@@ -492,7 +488,6 @@ class Board:
         """corrects finished (horizontal)boat corners:
         recieves a pos(row, col) and 2 booleans to indicate if the boat ends in said directions"""
         pos = self.get_value(row, col)
-        print("DEBUG:", ends_left, ends_right)
         if not ends_left:
             cont = 0
             while pos in ('m', 'M'):
@@ -508,7 +503,6 @@ class Board:
                 pos = self.get_value(row, col+cont)
             if self.get_value(row, col+cont-1) == 'm':
                 self.board[row][col+cont-1] = 'r'
-            print("DEBUG", cont)
     
     def correct_boat_vert(self, row: int, col: int, ends_up: bool, ends_down: bool):
         """corrects finished (vertical)boat corners:
@@ -561,14 +555,87 @@ class Board:
         
         if(horiz[0]==vert[0] and vert[0]==None): #nao e barco vertical nem horizontal
             self.check_submarine(row, col)
-        
         elif(horiz[0] != None and horiz[0] == self.get_biggest_boat_size()):
             self.complete_boat(horiz[0])
             self.correct_boat_horiz(row, col, horiz[1], horiz[2])
-            
         elif(vert[0] != None and vert[0] == self.get_biggest_boat_size()):
             self.complete_boat(vert[0])
             self.correct_boat_vert(row, col, vert[1], vert[2])
+        
+    def process_submarine(self, row: int, col:int):
+        if all(pos in ('w', 'W', '.') for pos in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))):
+            self.board[row][col] = 'c'
+            self.complete_boat(1)
+
+    def process_boat(self, size: int, boat_begin, boat_end, dir):
+        if self.get_biggest_boat_size() == size:
+            if boat_begin == boat_end:
+                self.process_submarine(boat_begin[0], boat_begin[1])
+                return
+            pos_begin = self.get_value(boat_begin[0], boat_begin[1])
+            pos_end = self.get_value(boat_end[0], boat_end[1])
+
+            if pos_begin != 'm' and pos_end != 'm': # caso o barco ja esteja fechado dos dois lados
+                return
+            if pos_begin == 'm':
+                self.board[boat_begin[0]][boat_begin[1]] = dir[0]
+            if pos_end == 'm':
+                self.board[boat_end[0]][boat_end[1]] = dir[1]
+            self.complete_boat(size)
+    
+    def check_completed_boats_horizontal(self):
+        for row in range(10):
+            in_boat = False
+            boat_size = 0
+            for col in range(10):
+                pos = self.get_value(row, col)
+                if not in_boat and pos in ('l', 'L', 'm'):
+                    in_boat = True
+                    boat_size +=1
+                    boat_begin = (row, col)
+                elif in_boat:
+                    if pos in ('m', 'M'):
+                        boat_size += 1
+                    elif pos in ('r', 'R'):
+                        boat_end = (row, col)
+                        boat_size += 1
+                        self.process_boat(boat_size, boat_begin, boat_end, ('l', 'r'))
+                        boat_size = 0
+                        in_boat = False
+                    elif pos in ('w', 'W', '.'):
+                        boat_end = (row, col-1)
+                        self.process_boat(boat_size, boat_begin, boat_end, ('l', 'r'))
+                        boat_size = 0
+                        in_boat = False
+                        
+    def check_completed_boats_vertical(self):
+        for col in range(10):
+            in_boat = False
+            boat_size = 0
+            for row in range(10):
+                pos = self.get_value(row, col)
+                if not in_boat and pos in ('t', 'T', 'm'):
+                    in_boat = True
+                    boat_size +=1
+                    boat_begin = (row, col)
+                elif in_boat:
+                    if pos in ('m', 'M'):
+                        boat_size += 1
+                    elif pos in ('b', 'B'):
+                        boat_end = (row, col)
+                        boat_size += 1
+                        self.process_boat(boat_size, boat_begin, boat_end, ('t', 'b'))
+                        boat_size = 0
+                        in_boat = False
+                    elif pos in ('w', 'W', '.'):
+                        boat_end = (row-1, col)
+                        self.process_boat(boat_size, boat_begin, boat_end, ('t', 'b'))
+                        boat_size = 0
+                        in_boat = False
+    
+    def check_completed_boats(self):
+        self.check_completed_boats_horizontal()
+        self.check_completed_boats_vertical()
 
       # TODO: outros metodos da classe        
 
@@ -657,6 +724,34 @@ if __name__ == "__main__":
     board.print()
     print(board.completed_boats)"""
 
+    """teste de check_completed_boats: com barcos identicos ao teste de cima mas por ordem diferente de adicao"""
+    """board.put_boat_piece(2, 0)
+    board.put_boat_piece(1, 5)
+    board.put_boat_piece(1, 7)
+    board.put_boat_piece(6, 8)
+    board.put_boat_piece(5, 8)
+    board.check_completed_boats()
+    board.print()
+    print(board.completed_boats)"""
+
+    """teste de process_submarine: com instancia identica ao teste de cima"""
+    board.put_boat_piece(2, 0)
+    board.put_boat_piece(1, 5)
+    board.put_boat_piece(1, 7)
+    board.put_boat_piece(5, 2)
+    board.put_boat_piece(6, 2)
+    board.put_boat_piece(8, 2)
+    board.put_boat_piece(9, 2)
+    board.put_boat_piece(5, 4)
+    board.put_boat_piece(6, 4)
+    board.put_boat_piece(5, 6)
+    board.put_boat_piece(6, 8)
+    board.put_boat_piece(5, 8)
+    board.print()
+    board.check_completed_boats()
+    board.print()
+    print(board.completed_boats)
+
     """teste de check_boats
     board.board[7][8] = 'm'
     board.board[6][8] = 'm'
@@ -693,4 +788,6 @@ maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanh
 
 ^esta funcao devera ser uma das actions isolada que percorre o tabuleiro em busca de barcos completos em tamanho mas nao em formato
 que percorre um barco e transforma as pontas em cantos de barco (l,r,t,b)
-ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas"""
+ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas
+
+put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M"""
