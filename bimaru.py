@@ -492,39 +492,43 @@ class Board:
         """corrects finished (horizontal)boat corners:
         recieves a pos(row, col) and 2 booleans to indicate if the boat ends in said directions"""
         pos = self.get_value(row, col)
+        print("DEBUG:", ends_left, ends_right)
         if not ends_left:
-            cont = 1
-            while pos == 'm':
-                pos = self.get_value(row, col-cont)
+            cont = 0
+            while pos in ('m', 'M'):
                 cont += 1
+                pos = self.get_value(row, col-cont)
             if self.get_value(row, col-cont+1) == 'm':
                 self.board[row][col-cont+1] = 'l'
+        pos = self.get_value(row, col)
         if not ends_right:
-            cont = 1
+            cont = 0
             while pos in ('m', 'M'):
-                pos = self.get_value(row, col+cont)
                 cont += 1
+                pos = self.get_value(row, col+cont)
             if self.get_value(row, col+cont-1) == 'm':
                 self.board[row][col+cont-1] = 'r'
+            print("DEBUG", cont)
     
     def correct_boat_vert(self, row: int, col: int, ends_up: bool, ends_down: bool):
         """corrects finished (vertical)boat corners:
         recieves a pos(row, col) and 2 booleans to indicate if the boat ends in said directions"""
         pos = self.get_value(row, col)
         if not ends_up:
-            cont = 1
-            while pos == 'm':
-                pos = self.get_value(row-cont, col)
+            cont = 0
+            while pos in ('m', 'M'):
                 cont += 1
+                pos = self.get_value(row-cont, col)
             if self.get_value(row-cont+1, col) == 'm':
                 self.board[row-cont+1][col] = 't'
+        pos = self.get_value(row, col)
         if not ends_down:
-            cont = 1
+            cont = 0
             while pos in ('m', 'M'):
-                pos = self.get_value(row+cont, col)
                 cont += 1
-            if self.get_value(row-cont+1, col) == 'm':
-                self.board[row-cont+1][col] = 'b'
+                pos = self.get_value(row+cont, col)
+            if self.get_value(row+cont-1, col) == 'm':
+                self.board[row+cont-1][col] = 'b'
 
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
@@ -560,11 +564,11 @@ class Board:
         
         elif(horiz[0] != None and horiz[0] == self.get_biggest_boat_size()):
             self.complete_boat(horiz[0])
-            self.correct_boat_horiz(row, col, horiz[1], horiz[0])
+            self.correct_boat_horiz(row, col, horiz[1], horiz[2])
             
         elif(vert[0] != None and vert[0] == self.get_biggest_boat_size()):
             self.complete_boat(vert[0])
-            self.correct_boat_vert
+            self.correct_boat_vert(row, col, vert[1], vert[2])
 
       # TODO: outros metodos da classe        
 
@@ -644,6 +648,15 @@ if __name__ == "__main__":
     board.print()
     print(board.completed_boats)"""
 
+    """teste de put_boat_piece -> correct boat (necessario desligar o put water do parse para funcionar)"""
+    """board.put_boat_piece(6, 8)
+    board.put_boat_piece(5, 8)
+    board.put_boat_piece(2, 0)
+    board.put_boat_piece(1, 5)
+    board.put_boat_piece(1, 7)
+    board.print()
+    print(board.completed_boats)"""
+
     """teste de check_boats
     board.board[7][8] = 'm'
     board.board[6][8] = 'm'
@@ -678,6 +691,6 @@ maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanh
     ......mmm.                      .....rmml.          .....rmml.
     ..........                      ..........          ..........
 
-fazer tambem funcao correct_boat(row, col)
+^esta funcao devera ser uma das actions isolada que percorre o tabuleiro em busca de barcos completos em tamanho mas nao em formato
 que percorre um barco e transforma as pontas em cantos de barco (l,r,t,b)
 ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas"""
