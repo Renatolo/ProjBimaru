@@ -145,11 +145,20 @@ class Board:
             self.put_water(row+1, col+1)
         self.board[row][col] = hint
 
-        if hint == 'M': # 'M' clues wont be processed during parsing
+        if hint == 'M': # 'M' clues wont be fully processed during parsing
             adj_values = (self.adjacent_horizontal_values(row, col), self.adjacent_vertical_values(row, col))
-            self.M_list.append((row, col))
-            return
-        if hint == 'R':
+            done = False
+            for i in range(4):
+                if adj_values[i] not in ('w', 'w', '.'):
+                    self.process_M_adj(row, col, i)
+                    done = True
+                    break
+            if ~done:
+                self.M_list.append((row, col))
+        elif hint == 'R':
+            self.put_water(row, col+1)
+            self.put_water(row-1, col)
+            self.put_water(row+1, col)
             aux1 = self.get_value(row, col-1)
             if aux1 == '.':
                 aux2 = self.get_value(row, col-2)
@@ -173,6 +182,9 @@ class Board:
                 else: # caso LMmR
                     self.complete_boat(4)
         elif hint == 'L':
+            self.put_water(row, col-1)
+            self.put_water(row-1, col)
+            self.put_water(row+1, col)
             aux1 = self.get_value(row, col+1)
             if aux1 == '.':
                 aux2 = self.get_value(row, col+2)
@@ -196,6 +208,9 @@ class Board:
                 else: # caso LmMR
                     self.complete_boat(4)
         elif hint == 'B':
+            self.put_water(row, col-1)
+            self.put_water(row, col+1)
+            self.put_water(row+1, col)
             aux1 = self.get_value(row-1, col)
             if aux1 == '.':
                 aux2 = self.get_value(row-2, col)
@@ -219,6 +234,9 @@ class Board:
                 else: # caso TMmB
                     self.complete_boat(4)
         elif hint == 'T':
+            self.put_water(row, col-1)
+            self.put_water(row, col+1)
+            self.put_water(row-1, col)
             aux1 = self.get_value(row+1, col)
             if aux1 == '.':
                 aux2 = self.get_value(row+2, col)
@@ -243,8 +261,37 @@ class Board:
                     self.complete_boat(4)
         else:
             self.complete_boat(1)
-            self.put_water(row+1, col)
-            
+    
+    def process_M_adj(self, row: int, col: int, dir :int):
+        """recebe pos(row, col) e um int (dir) que representa a direcao na qual o M tem um adjacente"""
+        if dir == 0:
+            pos = self.get_value(row, col-1)
+            if pos in ('m', 'L'):
+                self.put_boat_piece(row, col+1)
+            elif pos == 'M':
+                self.put_boat_piece(row, col-2)
+                self.put_boat_piece(row, col+1)
+        elif dir == 1:
+            pos = self.get_value(row, col+1)
+            if pos in ('m', 'R'):
+                self.put_boat_piece(row, col-1)
+            elif pos == 'M':
+                self.put_boat_piece(row, col+2)
+                self.put_boat_piece(row, col-1)
+        elif dir == 2:
+            pos = self.get_value(row-1, col)
+            if pos in ('m', 'T'):
+                self.put_boat_piece(row+1, col)
+            elif pos == 'M':
+                self.put_boat_piece(row-2, col)
+                self.put_boat_piece(row+1, col)
+        elif dir == 3:
+            pos = self.get_value(row+1, col)
+            if pos in ('m', 'B'):
+                self.put_boat_piece(row-1, col)
+            elif pos == 'M':
+                self.put_boat_piece(row+2, col)
+                self.put_boat_piece(row-1, col)
 
     def fill_completed_lines_with_water(self):
         for i in range(10):
@@ -440,7 +487,7 @@ class Board:
         return 1
     
     def put_boat_piece(self, row: int, col: int):
-        if self.get_value(row, col) in ('w', 'W'):
+        if self.get_value(row, col) != '.':
             return
         
         #places water in corners
@@ -468,7 +515,7 @@ class Board:
         horiz = self.check_boat_horizontal(row, col) #verifica se é um barco horizontal
         vert = self.check_boat_vertical(row, col) #verifica se é um barco vertical
         
-        if(horiz[0]==vert[0] and vert[0]==None):
+        if(horiz[0]==vert[0] and vert[0]==None): #nao e barco vertival nem horizontal
             self.check_submarine(row, col)
         
         elif(horiz[0] != None and horiz[0] == self.get_biggest_boat_size()):
@@ -574,7 +621,6 @@ if __name__ == "__main__":
     
     
 """verificacao de boat piece ter tamanho do maior barco possivel -> completa barco
-completar o process hints por else nos sub if.... condicao em que hints se *intersetam*
 maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanho k (sendo esse o ultimo desse tamanho)
     verifica se existe algum de tamanho k-1 incompleto (que passa a ser consideradp completo)
     Exº:    Imaginando se que se                entao
