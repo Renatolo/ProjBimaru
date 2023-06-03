@@ -124,8 +124,8 @@ class Board:
             if value != 'W':
                 board.process_hint(row, col, value)
             else:
-                board.row_array[row] -= 1
-                board.col_array[col] -= 1
+                board.empty_row_array[row] -= 1
+                board.empty_col_array[col] -= 1
                 board.board[row][col] = value
                 
         board.fill_completed_lines_with_water()
@@ -407,6 +407,8 @@ class Board:
             return 
             
         self.board[row][col] = 'w'
+        self.empty_row_array[row] -= 1
+        self.empty_col_array[col] -= 1
         adj_values = self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)
     
         if(adj_values[0] == 'm'):
@@ -486,6 +488,44 @@ class Board:
             return 2
         return 1
     
+    def correct_boat_horiz(self, row: int, col: int, ends_left: bool, ends_right: bool):
+        """corrects finished (horizontal)boat corners:
+        recieves a pos(row, col) and 2 booleans to indicate if the boat ends in said directions"""
+        pos = self.get_value(row, col)
+        if not ends_left:
+            cont = 1
+            while pos == 'm':
+                pos = self.get_value(row, col-cont)
+                cont += 1
+            if self.get_value(row, col-cont+1) == 'm':
+                self.board[row][col-cont+1] = 'l'
+        if not ends_right:
+            cont = 1
+            while pos in ('m', 'M'):
+                pos = self.get_value(row, col+cont)
+                cont += 1
+            if self.get_value(row, col+cont-1) == 'm':
+                self.board[row][col+cont-1] = 'r'
+    
+    def correct_boat_vert(self, row: int, col: int, ends_up: bool, ends_down: bool):
+        """corrects finished (vertical)boat corners:
+        recieves a pos(row, col) and 2 booleans to indicate if the boat ends in said directions"""
+        pos = self.get_value(row, col)
+        if not ends_up:
+            cont = 1
+            while pos == 'm':
+                pos = self.get_value(row-cont, col)
+                cont += 1
+            if self.get_value(row-cont+1, col) == 'm':
+                self.board[row-cont+1][col] = 't'
+        if not ends_down:
+            cont = 1
+            while pos in ('m', 'M'):
+                pos = self.get_value(row+cont, col)
+                cont += 1
+            if self.get_value(row-cont+1, col) == 'm':
+                self.board[row-cont+1][col] = 'b'
+
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
             return
@@ -515,14 +555,16 @@ class Board:
         horiz = self.check_boat_horizontal(row, col) #verifica se é um barco horizontal
         vert = self.check_boat_vertical(row, col) #verifica se é um barco vertical
         
-        if(horiz[0]==vert[0] and vert[0]==None): #nao e barco vertival nem horizontal
+        if(horiz[0]==vert[0] and vert[0]==None): #nao e barco vertical nem horizontal
             self.check_submarine(row, col)
         
         elif(horiz[0] != None and horiz[0] == self.get_biggest_boat_size()):
             self.complete_boat(horiz[0])
+            self.correct_boat_horiz(row, col, horiz[1], horiz[0])
             
         elif(vert[0] != None and vert[0] == self.get_biggest_boat_size()):
             self.complete_boat(vert[0])
+            self.correct_boat_vert
 
       # TODO: outros metodos da classe        
 
