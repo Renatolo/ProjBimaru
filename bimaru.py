@@ -39,6 +39,7 @@ class Board:
     def __init__(self):
         self.board = np.full((10, 10), '.', dtype=str)
         self.is_wrong = False #variable to keep track if board reached a wrong/impossible state
+        self.trivial = True #keeps track if board can use trivial method
         np.set_printoptions(formatter={'str_kind': lambda x: x})
         
     def get_value(self, row: int, col: int) -> str:
@@ -290,15 +291,19 @@ class Board:
                 self.put_boat_piece(row-1, col)
 
     def fill_completed_lines_with_water(self):
+        res = False
         for i in range(10):
             if self.row_array[i] == 0 and self.empty_row_array[i] > 0:
                 for col in range(10):
                     if self.get_value(i, col) == '.':
                         self.put_water(i, col)
+                        res = True
             if self.col_array[i] == 0 and self.empty_col_array[i] > 0:
                 for row in range(10):
                     if self.get_value(row, i) == '.':
                         self.put_water(row, i)
+                        res = True
+        return res
     
     def complete_boat(self, size: int):
         if size == 1:
@@ -675,41 +680,54 @@ class Board:
     def process_M(self, M):
         row = M[0]
         col = M[1]
+        res = False
         if self.row_array[row] >= 2 and self.col_array[col] >= 2: #tem espaco vertical e horizontal
             adj_values = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
             if adj_values[0] in ('w', 'W') or adj_values[1] in ('w', 'W'):
                 self.put_boat_piece(row-1, col)
                 self.put_boat_piece(row+1, col)
                 self.M_list.remove(M)
+                res = True
             elif adj_values[2] in ('w', 'W') or adj_values[3] in ('w', 'W'):
                 self.put_boat_piece(row, col-1)
                 self.put_boat_piece(row, col+1)
                 self.M_list.remove(M)
+                res = True
         elif self.row_array[row] >= 2:
             self.put_boat_piece(row, col-1)
             self.put_boat_piece(row, col+1)
             self.M_list.remove(M)
+            res = True
         elif self.col_array[col] >= 2:
             self.put_boat_piece(row-1, col)
             self.put_boat_piece(row+1, col)
             self.M_list.remove(M)
+            res = True
         else:
             self.is_wrong = True
+        return res
     
     def process_M_list(self):
+        res = False
         for M in self.M_list:
-            self.process_M(M)
+            if self.process_M(M):
+                res = True
+        return res
     
     def fill_trivial_lines(self):
+        res = False
         for i in range(10):
             if self.row_array[i] == self.empty_row_array[i]:
                 for col in range(10):
                     if self.get_value(i, col) == '.':
                         self.put_boat_piece(i, col)
+                        res = True
             if self.col_array[i] == self.empty_col_array[i]:
                 for row in range(10):
                     if self.get_value(row, i) == '.':
                         self.put_boat_piece(row, i)
+                        res = True
+        return res
     
     def check_possible_boat_horiz(self, row: int, begin: int, end: int):
         if self.get_value(row, begin-1) not in ('w', 'W', '.') or self.get_value(row, end+1) not in ('w', 'W', '.') or self.get_value(row, begin) == 'M' or self.get_value(row, end) == 'M':
@@ -783,6 +801,11 @@ class Board:
     
     def search_boat_size(self, size):
         return self.search_fit_horiz(size) + self.search_fit_vert(size)
+    
+    def do_trivial(self):
+        while not self.is_wrong and self.trivial:
+            if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
+                self.trivial = False
     
       # TODO: outros metodos da classe        
 
@@ -908,6 +931,11 @@ if __name__ == "__main__":
     """teste de search_boats_size"""
     """print(board.search_boat_size(4))"""
 
+    """teste do_trivial"""
+    """board.do_trivial()
+    board.print()
+    print(board.row_array, board.col_array)"""
+
     """teste de check_boats
     board.board[7][8] = 'm'
     board.board[6][8] = 'm'
@@ -959,4 +987,6 @@ ficar completos por consequencia
 
 (done? -> feito por consequencia dos pieces colocados anteriormente) check_corner: se se torna num corner -> meter agua nos adjacentes necessarios
 
-(done)fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel"""
+(done)fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel
+
+procurar sitios que tornem o board wrong"""
