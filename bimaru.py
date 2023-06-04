@@ -305,10 +305,16 @@ class Board:
             self.completed_boats['submarines'] -= 1
         elif size == 2:
             self.completed_boats['contratorpedeiros'] -= 1
+            if self.completed_boats['contratorpedeiros'] == 0:
+                self.check_completed_boats()
         elif size == 3:
             self.completed_boats['cruzadores'] -= 1
+            if self.completed_boats['cruzadores'] == 0:
+                self.check_completed_boats()
         else:
             self.completed_boats['couracado'] -= 1
+            if self.completed_boats['couracado'] == 0:
+                self.check_completed_boats()
     
     def check_boat_left(self, row: int, col: int):
         """Verifica se ha pecas de barco para a esquerda e, caso haja, se o barco termina """
@@ -900,7 +906,7 @@ if __name__ == "__main__":
     print(board.row_array, board.col_array)"""
 
     """teste de search_boats_size"""
-    print(board.search_boat_size(4))
+    """print(board.search_boat_size(4))"""
 
     """teste de check_boats
     board.board[7][8] = 'm'
@@ -948,7 +954,9 @@ ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao per
 numero de posicoes de barco que ainda faltam nessa row/col e, se tal se verificar, preencher a row/col de pedacos de
 barco
 
-put_boat_piece: ao completar o barco verificar se isso completa os barcos desse tamanho -> barcos de tamanho inferior podem
+(done)put_boat_piece: ao completar o barco verificar se isso completa os barcos desse tamanho -> barcos de tamanho inferior podem
 ficar completos por consequencia
 
-fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel"""
+(done? -> feito por consequencia dos pieces colocados anteriormente) check_corner: se se torna num corner -> meter agua nos adjacentes necessarios
+
+(done)fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel"""
