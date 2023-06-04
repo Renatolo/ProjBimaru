@@ -299,8 +299,6 @@ class Board:
                 for row in range(10):
                     if self.get_value(row, i) == '.':
                         self.put_water(row, i)
-        return self.board
-    
     
     def complete_boat(self, size: int):
         if size == 1:
@@ -706,7 +704,80 @@ class Board:
                 for row in range(10):
                     if self.get_value(row, i) == '.':
                         self.put_boat_piece(row, i)
-        return self.board
+    
+    def check_possible_boat_horiz(self, row: int, begin: int, end: int):
+        if self.get_value(row, begin-1) not in ('w', 'W', '.') or self.get_value(row, end+1) not in ('w', 'W', '.') or self.get_value(row, begin) == 'M' or self.get_value(row, end) == 'M':
+            return False, None
+        for col in range(begin, end+1):
+            adj_vert = self.adjacent_vertical_values(row, col)
+            if adj_vert[0] not in ('w', 'W', '.') or adj_vert[1] not in ('w', 'W', '.'):
+                return False, None
+        return True, (row, begin, row, end)
+
+
+    def search_fit_horiz(self, size: int):
+        res = []
+        for row in range(10):
+            in_water = True
+            current_size = 0
+            for col in range(10):
+                pos = self.get_value(row, col)
+                if in_water and pos in ('l', 'L', 'm', '.'):
+                    in_water = False
+                    current_size += 1
+                    b_begin = col
+                elif not in_water:
+                    if pos in ('m', 'M', 'r', 'R', '.'):
+                        current_size += 1
+                        if current_size == size:
+                            b_end = col
+                            current = self.check_possible_boat_horiz(row, b_begin, b_end)
+                            if current[0]:
+                                res.append(current[1])
+                            current_size -= 1
+                            b_begin += 1
+                    else:
+                        current_size = 0
+        return res
+    
+    def check_possible_boat_vert(self, col: int, begin: int, end: int):
+        if self.get_value(begin-1, col) not in ('w', 'W', '.') or self.get_value(end+1, col) not in ('w', 'W', '.') or self.get_value(begin, col) == 'M' or self.get_value(begin, col) == 'M':
+            return False, None
+        for row in range(begin, end+1):
+            adj_horiz = self.adjacent_horizontal_values(row, col)
+            if adj_horiz[0] not in ('w', 'W', '.') or adj_horiz[1] not in ('w', 'W', '.'):
+                return False, None
+        return True, (begin, col, end, col)
+    
+    def search_fit_vert(self, size: int):
+        res = []
+        for col in range(10):
+            in_water = True
+            current_size = 0
+            for row in range(10):
+                pos = self.get_value(row, col)
+                if in_water and pos in ('t', 'T', 'm', '.'):
+                    in_water = False
+                    current_size += 1
+                    b_begin = row
+                elif not in_water:
+                    if pos in ('m', 'M', 'b', 'B', '.'):
+                        current_size += 1
+                        if current_size == size:
+                            b_end = row
+                            current = self.check_possible_boat_vert(col, b_begin, b_end)
+                            if current[0]:
+                                res.append(current[1])
+                            current_size -= 1
+                            b_begin += 1
+                    else:
+                        current_size = 0
+        return res
+
+    
+    def search_boat_size(self, size):
+        return self.search_fit_horiz(size) + self.search_fit_vert(size)
+    
       # TODO: outros metodos da classe        
 
 class Bimaru(Problem):
@@ -821,12 +892,15 @@ if __name__ == "__main__":
     print(board.completed_boats)"""
 
     """teste de process_M_list"""
-    board.process_M_list()
+    """board.process_M_list()
     board.fill_trivial_lines()
     board.fill_trivial_lines()
     board.print()
     print(board.completed_boats)
-    print(board.row_array, board.col_array)
+    print(board.row_array, board.col_array)"""
+
+    """teste de search_boats_size"""
+    print(board.search_boat_size(4))
 
     """teste de check_boats
     board.board[7][8] = 'm'
@@ -872,4 +946,9 @@ ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao per
 
 (done)fazer funcao que itera por todas as linhas e colunas observando se o numero de posicoes por preencher corresponde ao
 numero de posicoes de barco que ainda faltam nessa row/col e, se tal se verificar, preencher a row/col de pedacos de
-barco"""
+barco
+
+put_boat_piece: ao completar o barco verificar se isso completa os barcos desse tamanho -> barcos de tamanho inferior podem
+ficar completos por consequencia
+
+fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel"""
