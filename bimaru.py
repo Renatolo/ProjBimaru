@@ -79,7 +79,7 @@ class Board:
         for i in self.board:
             for j in i:
                 if (j == 'w'):
-                    print('.', end = '')
+                    print('~', end = '')
                 else:
                     print(j, end = '')
             print()       
@@ -535,6 +535,18 @@ class Board:
             self.put_boat_piece(row-2, col)
         elif adj_pos[3] == 'M':
             self.put_boat_piece(row+2, col)
+    
+    def check_completed_row(self, row: int):
+        if self.row_array[row] == 0 and self.empty_row_array[row] > 0:
+            for col in range(10):
+                if self.get_value(row, col) == '.':
+                    self.put_water(row, col)
+    
+    def check_completed_col(self, col: int):
+        if self.col_array[col] == 0 and self.empty_col_array[col] > 0:
+            for row in range(10):
+                if self.get_value(row, col) == '.':
+                    self.put_water(row, col)
 
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
@@ -562,6 +574,8 @@ class Board:
         self.check_if_corner(row, col) #verifica se é um canto
         self.check_adj_corner(row, col) #verifica se o adjacente passa a ser um canto
         self.lookup_adj_M(row, col)
+        self.check_completed_row(row)
+        self.check_completed_col(col)
 
         horiz = self.check_boat_horizontal(row, col) #verifica se é um barco horizontal
         vert = self.check_boat_vertical(row, col) #verifica se é um barco vertical
@@ -794,6 +808,7 @@ if __name__ == "__main__":
     """teste de process_M_list"""
     board.process_M_list()
     board.print()
+    print(board.row_array, board.col_array)
 
     """teste de check_boats
     board.board[7][8] = 'm'
@@ -833,6 +848,10 @@ maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanh
 que percorre um barco e transforma as pontas em cantos de barco (l,r,t,b)
 ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas
 
-put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M
+(done)put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M
 
-put_boat_piece: se ao meter uma peca de barco se completa uma linha ou uma coluna: preencher o resto de agua"""
+(done)put_boat_piece: se ao meter uma peca de barco se completa uma linha ou uma coluna: preencher o resto de agua
+
+fazer funcao que itera por todas as linhas e colunas observando se o numero de posicoes por preencher corresponde ao
+numero de posicoes de barco que ainda faltam nessa row/col e, se tal se verificar, preencher a row/col de pedacos de
+barco"""
