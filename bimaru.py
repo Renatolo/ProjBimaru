@@ -812,13 +812,12 @@ class Board:
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        # TODO
-        pass
+        self.initial = BimaruState(board)
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que pTodem ser executadas a
         partir do estado passado como argumento."""
-        # TODO
+        # TODO  
         pass
 
     def result(self, state: BimaruState, action):
