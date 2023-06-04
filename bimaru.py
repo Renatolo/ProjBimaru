@@ -117,8 +117,7 @@ class Board:
             if value != 'W':
                 board.process_hint(row, col, value)
             else:
-                board.empty_row_array[row] -= 1
-                board.empty_col_array[col] -= 1
+                board.put_water(row, col)
                 board.board[row][col] = value
                 
         board.fill_completed_lines_with_water()
@@ -304,6 +303,10 @@ class Board:
     
     
     def complete_boat(self, size: int):
+        if size == 3:
+            print("DEBUG:1")
+            self.print()
+            print("DEBUG:2")
         if size == 1:
             self.completed_boats['submarines'] -= 1
         elif size == 2:
@@ -871,6 +874,6 @@ ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao per
 
 (done)put_boat_piece: se ao meter uma peca de barco se completa uma linha ou uma coluna: preencher o resto de agua
 
-fazer funcao que itera por todas as linhas e colunas observando se o numero de posicoes por preencher corresponde ao
+(done)fazer funcao que itera por todas as linhas e colunas observando se o numero de posicoes por preencher corresponde ao
 numero de posicoes de barco que ainda faltam nessa row/col e, se tal se verificar, preencher a row/col de pedacos de
 barco"""
