@@ -303,10 +303,6 @@ class Board:
     
     
     def complete_boat(self, size: int):
-        if size == 3:
-            print("DEBUG:1")
-            self.print()
-            print("DEBUG:2")
         if size == 1:
             self.completed_boats['submarines'] -= 1
         elif size == 2:
@@ -494,7 +490,7 @@ class Board:
         pos = self.get_value(row, col)
         if not ends_left:
             cont = 0
-            while pos in ('m', 'M'):
+            while pos in ('m', 'M', 'r'):
                 cont += 1
                 pos = self.get_value(row, col-cont)
             if self.get_value(row, col-cont+1) == 'm':
@@ -502,7 +498,7 @@ class Board:
         pos = self.get_value(row, col)
         if not ends_right:
             cont = 0
-            while pos in ('m', 'M'):
+            while pos in ('m', 'M', 'l'):
                 cont += 1
                 pos = self.get_value(row, col+cont)
             if self.get_value(row, col+cont-1) == 'm':
@@ -514,7 +510,7 @@ class Board:
         pos = self.get_value(row, col)
         if not ends_up:
             cont = 0
-            while pos in ('m', 'M'):
+            while pos in ('m', 'M', 'b'):
                 cont += 1
                 pos = self.get_value(row-cont, col)
             if self.get_value(row-cont+1, col) == 'm':
@@ -522,7 +518,7 @@ class Board:
         pos = self.get_value(row, col)
         if not ends_down:
             cont = 0
-            while pos in ('m', 'M'):
+            while pos in ('m', 'M', 't'):
                 cont += 1
                 pos = self.get_value(row+cont, col)
             if self.get_value(row+cont-1, col) == 'm':
