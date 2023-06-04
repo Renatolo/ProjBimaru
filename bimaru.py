@@ -105,8 +105,8 @@ class Board:
                                  "submarines": 4}
         board.row_array = [int(i) for i in lines[0][1:]] #row hints array
         board.col_array = [int(i) for i in lines[1][1:]] #column hints array
-        board.empty_row_array = 10*[10] #CORRIGIR
-        board.empty_col_array = 10*[10] #CORRIGIR
+        board.empty_row_array = 10*[10] 
+        board.empty_col_array = 10*[10] 
         num_hints = int(lines[2][0])
         board.M_list = []
         
