@@ -29,6 +29,9 @@ class BimaruState:
 
     def __lt__(self, other):
         return self.id < other.id
+    
+    def __str__(self):
+        return str(self.board)
 
     # TODO: outros metodos da classe
 
@@ -813,7 +816,7 @@ class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         self.initial = BimaruState(board)
-
+        
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que pTodem ser executadas a
         partir do estado passado como argumento."""
@@ -832,10 +835,8 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        if(all(x == 0 for x in self.board.completed_boats.values())):
-            return True
-        # TODO
-        pass
+        return all(x == 0 for x in self.board.completed_boats.values())
+            
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
