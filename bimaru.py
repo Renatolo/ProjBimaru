@@ -38,6 +38,7 @@ class Board:
 
     def __init__(self):
         self.board = np.full((10, 10), '.', dtype=str)
+        self.is_wrong = False #variable to keep track if board reached a wrong/impossible state
         np.set_printoptions(formatter={'str_kind': lambda x: x})
         
     def get_value(self, row: int, col: int) -> str:
@@ -120,7 +121,7 @@ class Board:
                 board.empty_col_array[col] -= 1
                 board.board[row][col] = value
                 
-        #board.fill_completed_lines_with_water()
+        board.fill_completed_lines_with_water()
         return board
  
     def process_hint(self, row:int, col:int, hint:str):
@@ -291,14 +292,14 @@ class Board:
 
     def fill_completed_lines_with_water(self):
         for i in range(10):
-            if self.row_array[i] == 0:
-                for j in range(10):
-                    if self.get_value(i, j) == '.':
-                        self.put_water(i, j)
-            if self.col_array[i] == 0:
-                for z in range(10):
-                    if self.get_value(z, i) == '.':
-                        self.put_water(z, i)
+            if self.row_array[i] == 0 and self.empty_row_array[i] > 0:
+                for col in range(10):
+                    if self.get_value(i, col) == '.':
+                        self.put_water(i, col)
+            if self.col_array[i] == 0 and self.empty_col_array[i] > 0:
+                for row in range(10):
+                    if self.get_value(row, i) == '.':
+                        self.put_water(row, i)
         return self.board
     
     
@@ -636,6 +637,34 @@ class Board:
     def check_completed_boats(self):
         self.check_completed_boats_horizontal()
         self.check_completed_boats_vertical()
+    
+    def process_M(self, M):
+        row = M[0]
+        col = M[1]
+        if self.row_array[row] >= 2 and self.col_array[col] >= 2: #tem espaco vertical e horizontal
+            adj_values = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
+            if adj_values[0] in ('w', 'W') or adj_values[1] in ('w', 'W'):
+                self.put_boat_piece(row-1, col)
+                self.put_boat_piece(row+1, col)
+                self.M_list.remove(M)
+            elif adj_values[2] in ('w', 'W') or adj_values[3] in ('w', 'W'):
+                self.put_boat_piece(row, col-1)
+                self.put_boat_piece(row, col+1)
+                self.M_list.remove(M)
+        elif self.row_array[row] >= 2:
+            self.put_boat_piece(row, col-1)
+            self.put_boat_piece(row, col+1)
+            self.M_list.remove(M)
+        elif self.col_array[col] >= 2:
+            self.put_boat_piece(row-1, col)
+            self.put_boat_piece(row+1, col)
+            self.M_list.remove(M)
+        else:
+            self.is_wrong = True
+    
+    def process_M_list(self):
+        for M in self.M_list:
+            self.process_M(M)
 
       # TODO: outros metodos da classe        
 
@@ -694,8 +723,7 @@ if __name__ == "__main__":
     """
     print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
     print(board.row_array, board.col_array) #pistas das linhas e colunas
-    print(board.get_value(6, 8))
-    board.get_biggest_boat_size()
+    print(board.get_biggest_boat_size())
 
     """teste de put_water"""
     """board.board[7][8] = 'm'
@@ -735,7 +763,7 @@ if __name__ == "__main__":
     print(board.completed_boats)"""
 
     """teste de process_submarine: com instancia identica ao teste de cima"""
-    board.put_boat_piece(2, 0)
+    """board.put_boat_piece(2, 0)
     board.put_boat_piece(1, 5)
     board.put_boat_piece(1, 7)
     board.put_boat_piece(5, 2)
@@ -747,10 +775,13 @@ if __name__ == "__main__":
     board.put_boat_piece(5, 6)
     board.put_boat_piece(6, 8)
     board.put_boat_piece(5, 8)
-    board.print()
     board.check_completed_boats()
     board.print()
-    print(board.completed_boats)
+    print(board.completed_boats)"""
+
+    """teste de process_M_list"""
+    board.process_M_list()
+    board.print()
 
     """teste de check_boats
     board.board[7][8] = 'm'
