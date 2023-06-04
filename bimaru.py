@@ -464,14 +464,14 @@ class Board:
         return False
 
     def check_adj_corner(self, row: int, col: int):
-        pos = self.get_value(row, col)
-        if(pos == 'r' and self.get_value(row, col-2) in ('w', 'W') and self.get_value(row, col-1) == 'c'):
+        adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
+        if adj_pos[0] == 'm' and self.get_value(row, col-2) in ('w', 'W'):
             self.board[row][col-1] = 'l'
-        elif(pos == 'l' and self.get_value(row, col+2) in ('w', 'W') and self.get_value(row, col+1) == 'c'):
-            self.board[row][col+1] = 'r'
-        elif(pos == 'b' and self.get_value(row-2, col) in ('w', 'W') and self.get_value(row-1, col) == 'c'):
+        elif adj_pos[2] == 'm' and self.get_value(row-2, col) in ('w', 'W'):
             self.board[row-1][col] = 't'
-        elif(pos == 't' and self.get_value(row+2, col) in ('w', 'W') and self.get_value(row+1, col) == 'c'):
+        if adj_pos[1] == 'm' and self.get_value(row, col+2) in ('w', 'W'):
+            self.board[row][col+1] = 'r'
+        elif adj_pos[3] == 'm' and self.get_value(row+2, col) in ('w', 'W'):
             self.board[row+1][col] = 'b'
     
     def get_biggest_boat_size(self):
@@ -572,22 +572,27 @@ class Board:
         self.board[row][col] = 'm'
 
         self.check_if_corner(row, col) #verifica se é um canto
-        self.check_adj_corner(row, col) #verifica se o adjacente passa a ser um canto
-        self.lookup_adj_M(row, col)
-        self.check_completed_row(row)
-        self.check_completed_col(col)
+        self.check_adj_corner(row, col) #verifica se os adjacentes passam a ser um canto
 
         horiz = self.check_boat_horizontal(row, col) #verifica se é um barco horizontal
         vert = self.check_boat_vertical(row, col) #verifica se é um barco vertical
         
         if(horiz[0]==vert[0] and vert[0]==None): #nao e barco vertical nem horizontal
             self.check_submarine(row, col)
+        elif horiz[0] != None and horiz[1] and horiz[2]:
+            self.complete_boat(horiz[0])
+        elif vert[0] != None and vert[1] and vert[2]:
+            self.complete_boat(vert[0])
         elif(horiz[0] != None and horiz[0] == self.get_biggest_boat_size()):
             self.complete_boat(horiz[0])
             self.correct_boat_horiz(row, col, horiz[1], horiz[2])
         elif(vert[0] != None and vert[0] == self.get_biggest_boat_size()):
             self.complete_boat(vert[0])
             self.correct_boat_vert(row, col, vert[1], vert[2])
+
+        self.lookup_adj_M(row, col)
+        self.check_completed_row(row)
+        self.check_completed_col(col)
         
     def process_submarine(self, row: int, col:int):
         if all(pos in ('w', 'W', '.') for pos in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))):
@@ -691,7 +696,18 @@ class Board:
     def process_M_list(self):
         for M in self.M_list:
             self.process_M(M)
-
+    
+    def fill_trivial_lines(self):
+        for i in range(10):
+            if self.row_array[i] == self.empty_row_array[i]:
+                for col in range(10):
+                    if self.get_value(i, col) == '.':
+                        self.put_boat_piece(i, col)
+            if self.col_array[i] == self.empty_col_array[i]:
+                for row in range(10):
+                    if self.get_value(row, i) == '.':
+                        self.put_boat_piece(row, i)
+        return self.board
       # TODO: outros metodos da classe        
 
 class Bimaru(Problem):
@@ -807,7 +823,10 @@ if __name__ == "__main__":
 
     """teste de process_M_list"""
     board.process_M_list()
+    board.fill_trivial_lines()
+    board.fill_trivial_lines()
     board.print()
+    print(board.completed_boats)
     print(board.row_array, board.col_array)
 
     """teste de check_boats
