@@ -524,6 +524,17 @@ class Board:
                 pos = self.get_value(row+cont, col)
             if self.get_value(row+cont-1, col) == 'm':
                 self.board[row+cont-1][col] = 'b'
+    
+    def lookup_adj_M(self, row: int, col: int):
+        adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
+        if adj_pos[0] == 'M':
+            self.put_boat_piece(row, col-2)
+        elif adj_pos[1] == 'M':
+            self.put_boat_piece(row, col+2)
+        elif adj_pos[2] == 'M':
+            self.put_boat_piece(row-2, col)
+        elif adj_pos[3] == 'M':
+            self.put_boat_piece(row+2, col)
 
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
@@ -550,6 +561,7 @@ class Board:
 
         self.check_if_corner(row, col) #verifica se é um canto
         self.check_adj_corner(row, col) #verifica se o adjacente passa a ser um canto
+        self.lookup_adj_M(row, col)
 
         horiz = self.check_boat_horizontal(row, col) #verifica se é um barco horizontal
         vert = self.check_boat_vertical(row, col) #verifica se é um barco vertical
@@ -821,4 +833,6 @@ maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanh
 que percorre um barco e transforma as pontas em cantos de barco (l,r,t,b)
 ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas
 
-put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M"""
+put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M
+
+put_boat_piece: se ao meter uma peca de barco se completa uma linha ou uma coluna: preencher o resto de agua"""
