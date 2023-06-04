@@ -807,36 +807,53 @@ class Board:
             if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
                 self.trivial = False
     
+    def fill_with_boat(self, boat):
+        for row in range(boat[0], boat[2]+1):
+            for col in range(boat[1], boat[3]+1):
+                self.put_boat_piece(row, col)
+    
       # TODO: outros metodos da classe        
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
+        self.initial = BimaruState(board)
+        self.state = self.initial
         # TODO
-        pass
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que pTodem ser executadas a
         partir do estado passado como argumento."""
+        actions_array = []
+        if self.state.board.is_wrong:
+            return actions_array
+        elif self.state.board.trivial:
+            actions_array.append("trivial")
+        else:
+            actions_array.append(self.state.board.search_boat_size(self.state.board.get_biggest_boat_size()))
+        return actions_array
         # TODO
-        pass
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
+        new_state = BimaruState(state.board)
+        if action == "trivial":
+            new_state.board.do_trivial()
+            new_state.board.print()
+        else:
+            new_state.board.fill_with_boat(action)
         # TODO
-        pass
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        if(all(x == 0 for x in self.board.completed_boats.values())):
+        if(all(x == 0 for x in self.state.board.completed_boats.values())):
             return True
         # TODO
-        pass
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -853,7 +870,9 @@ if __name__ == "__main__":
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     board = Board.parse_instance()
-    board.print()
+    problem = Bimaru(board)
+    goal_b = depth_first_tree_search(problem)
+    goal_b.state.board.print()
     # Imprimir valores adjacentes
     """print(board.get_value(0,0))
     print(board.adjacent_vertical_values(3, 3))
@@ -989,4 +1008,6 @@ ficar completos por consequencia
 
 (done)fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel
 
-procurar sitios que tornem o board wrong"""
+procurar sitios que tornem o board wrong
+
+preencher nome e grupo"""
