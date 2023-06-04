@@ -811,6 +811,7 @@ class Board:
                 self.trivial = False
     
     def fill_with_boat(self, boat):
+        print(boat)
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
                 self.put_boat_piece(row, col)
@@ -854,7 +855,7 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        return all(x == 0 for x in self.board.completed_boats.values())
+        return all(x == 0 for x in self.state.board.completed_boats.values())
             
 
     def h(self, node: Node):
@@ -874,6 +875,7 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem = Bimaru(board)
     goal_b = depth_first_tree_search(problem)
+    print()
     goal_b.state.board.print()
     # Imprimir valores adjacentes
     """print(board.get_value(0,0))
@@ -883,9 +885,9 @@ if __name__ == "__main__":
     print(board.adjacent_horizontal_values(1, 0))
     print(board.adjacent_vertical_values(8, 8))
     """
-    print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
+    """print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
     print(board.row_array, board.col_array) #pistas das linhas e colunas
-    print(board.get_biggest_boat_size())
+    print(board.get_biggest_boat_size())"""
 
     """teste de put_water"""
     """board.board[7][8] = 'm'
