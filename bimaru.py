@@ -659,6 +659,10 @@ class Board:
     def process_submarine(self, row: int, col:int):
         if all(pos in ('w', 'W', '.') for pos in (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))):
             self.board[row][col] = 'c'
+            self.put_water(row, col-1)
+            self.put_water(row, col+1)
+            self.put_water(row-1, col)
+            self.put_water(row+1, col)
             self.complete_boat(1)
 
     def process_boat(self, size: int, boat_begin, boat_end, dir):
@@ -726,11 +730,25 @@ class Board:
                         self.process_boat(boat_size, boat_begin, boat_end, ('t', 'b'))
                         boat_size = 0
                         in_boat = False
+
+    def check_completed_submarines(self):
+        #DEBUG
+        global global_v
+        if global_v == 1007:
+            print("DEBUG3:")
+        for row in range(10):
+            for col in range(10):
+                adj_pos = self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)
+                if self.get_value(row, col) in ('m', 'c') and all(x in ('w', 'W', '.') for x in adj_pos):
+                    self.put_water(row, col-1)
+                    self.put_water(row, col+1)
+                    self.put_water(row-1, col)
+                    self.put_water(row+1, col)
     
     def check_completed_boats(self):
         self.check_completed_boats_horizontal()
         self.check_completed_boats_vertical()
-    
+        #self.check_completed_submarines()
     def process_M(self, M):
         row = M[0]
         col = M[1]
@@ -886,7 +904,29 @@ class Board:
         self.check_if_wrong()
         #self.print()
     
+    def fill_with_submarine(self, row: int, col: int):
+        pos = self.get_value(row, col)
+        if pos == '.':
+            self.put_boat_piece(row, col)
+        elif pos == 'm':
+            adj_pos = self.adjacent_horizontal_values() + self.adjacent_vertical_values()
+            if adj_pos[0] == '.':
+                self.put_water(row, col-1)
+            if adj_pos[1] == '.':
+                self.put_water(row, col+1)
+            if adj_pos[2] == '.':
+                self.put_water(row-1, col)
+            if adj_pos[3] == '.':
+                self.put_water(row+1, col)
+    
     def fill_with_boat(self, boat):
+        #DEBUG
+        global global_v
+        if global_v == 27:
+            print(boat)
+        if boat[0] == boat[2] and boat[1] == boat[3]:
+            self.fill_submarine(boat[0], boat[1])
+            return
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
                 #print("DEBUG3:", row, col)
@@ -928,12 +968,13 @@ class Bimaru(Problem):
         if action == "trivial":
             new_state.board.do_trivial()
         else:
-            """if action == (8, 0, 8, 2):
-                print("DEBUG:")
-                state.board.print()"""
             #DEBUG
             global global_v
             global_v += 1
+            if action == (8, 4, 8, 5) and global_v >= 1005:
+                print("DEBUG:")
+                new_state.board.print()
+                print(global_v)
             """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
                 print("++++++++++++++++", global_v)"""
                 #new_state.board.print()
@@ -941,8 +982,10 @@ class Bimaru(Problem):
                 #if global_v == 5000:
                 #    exit(1)
             new_state.board.fill_with_boat(action)
-            """if action == (8, 0, 8, 2):
-                state.board.print()"""
+            if action == (8, 4, 8, 5) and global_v >= 1005:
+                new_state.board.print()
+            if global_v > 1200:
+                exit(1)
             """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
                 new_state.board.print()
                 print(new_state.board.row_array, new_state.board.col_array)
