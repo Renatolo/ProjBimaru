@@ -577,12 +577,22 @@ class Board:
     def lookup_adj_M(self, row: int, col: int):
         adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
         if adj_pos[0] == 'M':
+            if self.get_value(row, col-2) in ('w', 'W'):
+                self.is_wrong = True
             self.put_boat_piece(row, col-2)
         elif adj_pos[1] == 'M':
+            #print("DEBUG5:")
+            if self.get_value(row, col+2) in ('w', 'W'):
+                #print("DEBUG5:")
+                self.is_wrong = True
             self.put_boat_piece(row, col+2)
         elif adj_pos[2] == 'M':
+            if self.get_value(row-2, col) in ('w', 'W'):
+                self.is_wrong = True
             self.put_boat_piece(row-2, col)
         elif adj_pos[3] == 'M':
+            if self.get_value(row+2, col) in ('w', 'W'):
+                self.is_wrong = True
             self.put_boat_piece(row+2, col)
     
     def check_completed_row(self, row: int):
@@ -600,6 +610,9 @@ class Board:
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
             return
+        
+        #if row == 9 and col == 3:
+        #    print("DEBUG:")
         
         #places water in corners
         corners = (self.get_value(row-1, col-1), self.get_value(row-1, col+1), self.get_value(row+1, col-1), self.get_value(row+1, col+1))
@@ -864,12 +877,14 @@ class Board:
                 self.is_wrong = True
     
     def do_trivial(self):
+        #print("DEBUG1:")
         while not self.is_wrong and self.trivial:
             if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
                 #print("DEBUG", self.is_wrong, self.trivial)
                 #self.print()
                 self.trivial = False
         self.check_if_wrong()
+        #self.print()
     
     def fill_with_boat(self, boat):
         for row in range(boat[0], boat[2]+1):
@@ -913,16 +928,21 @@ class Bimaru(Problem):
         if action == "trivial":
             new_state.board.do_trivial()
         else:
+            """if action == (8, 0, 8, 2):
+                print("DEBUG:")
+                state.board.print()"""
             #DEBUG
-            """global global_v
+            global global_v
             global_v += 1
-            if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
+            """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
                 print("++++++++++++++++", global_v)"""
                 #new_state.board.print()
                 #print(new_state.board.row_array, new_state.board.col_array, action)
                 #if global_v == 5000:
                 #    exit(1)
             new_state.board.fill_with_boat(action)
+            """if action == (8, 0, 8, 2):
+                state.board.print()"""
             """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
                 new_state.board.print()
                 print(new_state.board.row_array, new_state.board.col_array)
@@ -937,7 +957,7 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        return all(x == 0 for x in state.board.completed_boats.values())
+        return all(x == 0 for x in state.board.completed_boats.values()) and not state.board.is_wrong
             
 
     def h(self, node: Node):
