@@ -18,7 +18,8 @@ from search import (
     recursive_best_first_search,
 )
 
-"""DEBUG: global_v = 0"""
+#DEBUG:
+global_v = 0
 
 
 class BimaruState:
@@ -46,6 +47,8 @@ class Board:
         self.is_wrong = False #variable to keep track if board reached a wrong/impossible state
         self.trivial = True #keeps track if board can use trivial method
         self.completed_boats = {}
+        self.rows = []
+        self.cols = []
         self.row_array = []
         self.col_array = []
         self.empty_row_array = []
@@ -102,10 +105,13 @@ class Board:
         new_copy.trivial = self.trivial
         new_copy.board = self.board.copy()
         new_copy.completed_boats = self.completed_boats.copy()
+        new_copy.rows = self.rows
+        new_copy.cols = self.cols
         new_copy.row_array = self.row_array.copy()
         new_copy.col_array = self.col_array.copy()
         new_copy.empty_row_array = self.empty_row_array.copy()
         new_copy.empty_col_array = self.empty_col_array.copy()
+        return new_copy
         
 
     @staticmethod
@@ -128,6 +134,8 @@ class Board:
                                  "submarines": 4}
         board.row_array = [int(i) for i in lines[0][1:]] #row hints array
         board.col_array = [int(i) for i in lines[1][1:]] #column hints array
+        board.rows = board.row_array.copy()
+        board.cols = board.col_array.copy()
         board.empty_row_array = 10*[10] 
         board.empty_col_array = 10*[10] 
         num_hints = int(lines[2][0])
@@ -329,16 +337,24 @@ class Board:
     def complete_boat(self, size: int):
         if size == 1:
             self.completed_boats['submarines'] -= 1
+            if self.completed_boats['submarines'] < 0:
+                self.is_wrong = True
         elif size == 2:
             self.completed_boats['contratorpedeiros'] -= 1
+            if self.completed_boats['submarines'] < 0:
+                self.is_wrong = True
             if self.completed_boats['contratorpedeiros'] == 0:
                 self.check_completed_boats()
         elif size == 3:
             self.completed_boats['cruzadores'] -= 1
+            if self.completed_boats['submarines'] < 0:
+                self.is_wrong = True
             if self.completed_boats['cruzadores'] == 0:
                 self.check_completed_boats()
         else:
             self.completed_boats['couracado'] -= 1
+            if self.completed_boats['submarines'] < 0:
+                self.is_wrong = True
             if self.completed_boats['couracado'] == 0:
                 self.check_completed_boats()
     
@@ -525,6 +541,7 @@ class Board:
                 pos = self.get_value(row, col-cont)
             if self.get_value(row, col-cont+1) == 'm':
                 self.board[row][col-cont+1] = 'l'
+                self.put_water(row, col-cont)
         pos = self.get_value(row, col)
         if not ends_right:
             cont = 0
@@ -533,6 +550,7 @@ class Board:
                 pos = self.get_value(row, col+cont)
             if self.get_value(row, col+cont-1) == 'm':
                 self.board[row][col+cont-1] = 'r'
+                self.put_water(row, col+cont)
     
     def correct_boat_vert(self, row: int, col: int, ends_up: bool, ends_down: bool):
         """corrects finished (vertical)boat corners:
@@ -545,6 +563,7 @@ class Board:
                 pos = self.get_value(row-cont, col)
             if self.get_value(row-cont+1, col) == 'm':
                 self.board[row-cont+1][col] = 't'
+                self.put_water(row-cont, col)
         pos = self.get_value(row, col)
         if not ends_down:
             cont = 0
@@ -553,6 +572,7 @@ class Board:
                 pos = self.get_value(row+cont, col)
             if self.get_value(row+cont-1, col) == 'm':
                 self.board[row+cont-1][col] = 'b'
+                self.put_water(row+cont, col)
     
     def lookup_adj_M(self, row: int, col: int):
         adj_pos = (self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col))
@@ -765,26 +785,28 @@ class Board:
     def search_fit_horiz(self, size: int):
         res = []
         for row in range(10):
-            in_water = True
-            current_size = 0
-            for col in range(10):
-                pos = self.get_value(row, col)
-                if in_water and pos in ('l', 'L', 'm', '.'):
-                    in_water = False
-                    current_size += 1
-                    b_begin = col
-                elif not in_water:
-                    if pos in ('m', 'M', 'r', 'R', '.'):
+            if self.rows[row] >= size:
+                in_water = True
+                current_size = 0
+                for col in range(10):
+                    pos = self.get_value(row, col)
+                    if in_water and pos in ('l', 'L', 'm', '.'):
+                        in_water = False
                         current_size += 1
-                        if current_size == size:
-                            b_end = col
-                            current = self.check_possible_boat_horiz(row, b_begin, b_end)
-                            if current[0]:
-                                res.append(current[1])
-                            current_size -= 1
-                            b_begin += 1
-                    else:
-                        current_size = 0
+                        b_begin = col
+                    elif not in_water:
+                        if pos in ('m', 'M', 'r', 'R', '.'):
+                            current_size += 1
+                            if current_size == size:
+                                b_end = col
+                                current = self.check_possible_boat_horiz(row, b_begin, b_end)
+                                if current[0]:
+                                    res.append(current[1])
+                                current_size -= 1
+                                b_begin += 1
+                        else:
+                            current_size = 0
+                            in_water = True
         return res
     
     def check_possible_boat_vert(self, col: int, begin: int, end: int):
@@ -801,41 +823,59 @@ class Board:
     def search_fit_vert(self, size: int):
         res = []
         for col in range(10):
-            in_water = True
-            current_size = 0
-            for row in range(10):
-                pos = self.get_value(row, col)
-                if in_water and pos in ('t', 'T', 'm', '.'):
-                    in_water = False
-                    current_size += 1
-                    b_begin = row
-                elif not in_water:
-                    if pos in ('m', 'M', 'b', 'B', '.'):
+            if self.cols[col] >= size:
+                in_water = True
+                current_size = 0
+                for row in range(10):
+                    pos = self.get_value(row, col)
+                    if in_water and pos in ('t', 'T', 'm', '.'):
+                        in_water = False
                         current_size += 1
-                        if current_size == size:
-                            b_end = row
-                            current = self.check_possible_boat_vert(col, b_begin, b_end)
-                            if current[0]:
-                                res.append(current[1])
-                            current_size -= 1
-                            b_begin += 1
-                    else:
-                        current_size = 0
+                        b_begin = row
+                    elif not in_water:
+                        if pos in ('m', 'M', 'b', 'B', '.'):
+                            current_size += 1
+                            if current_size == size:
+                                b_end = row
+                                current = self.check_possible_boat_vert(col, b_begin, b_end)
+                                if current[0]:
+                                    res.append(current[1])
+                                current_size -= 1
+                                b_begin += 1
+                        else:
+                            current_size = 0
+                            in_water = True
         return res
 
     
     def search_boat_size(self, size):
-        return self.search_fit_horiz(size) + self.search_fit_vert(size)
+        aux_b = self.search_fit_horiz(size) + self.search_fit_vert(size)
+        aux = ('submarines', 'contratorpedeiros', 'cruzadores', 'couracado')
+        if len(aux_b) < self.completed_boats[aux[size-1]]:
+            self.is_wrong = True
+        return aux_b
+    
+    def check_if_wrong(self):
+        for row in range(10):
+            if self.row_array[row] < 0:
+                self.is_wrong = True
+        for col in range(10):
+            if self.col_array[col] < 0:
+                self.is_wrong = True
     
     def do_trivial(self):
         while not self.is_wrong and self.trivial:
             if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
                 self.trivial = False
+        self.check_if_wrong()
     
     def fill_with_boat(self, boat):
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
-                self.put_boat_piece(row, col)
+                if self.get_value(row, col) == '.':
+                    self.put_boat_piece(row, col)
+                else:
+                    self.is_wrong = True
     
       # TODO: outros metodos da classe        
 
@@ -850,13 +890,12 @@ class Bimaru(Problem):
         """Retorna uma lista de ações que pTodem ser executadas a
         partir do estado passado como argumento."""
         actions_array = []
-        if self.state.board.is_wrong:
+        if state.board.is_wrong:
             return actions_array
-        elif self.state.board.trivial:
+        elif state.board.trivial:
             actions_array.append("trivial")
         else:
-            actions_array = self.state.board.search_boat_size(self.state.board.get_biggest_boat_size())
-            print(actions_array)
+            actions_array = state.board.search_boat_size(state.board.get_biggest_boat_size())
         return actions_array
         # TODO
 
@@ -866,18 +905,24 @@ class Bimaru(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state)."""
         new_state = BimaruState(state.board.copy())
-        print(new_state.board)
         if action == "trivial":
             new_state.board.do_trivial()
         else:
-            """global global_v
-            DEBUG: global_v += 1
-            if global_v == 100000:
-                new_state.board.print()
-                exit(1)"""
+            #DEBUG
+            global global_v
+            global_v += 1
+            if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
+                print("++++++++++++++++", global_v)
+                #new_state.board.print()
+                #print(new_state.board.row_array, new_state.board.col_array, action)
+                if global_v == 5000:
+                    exit(1)
             new_state.board.fill_with_boat(action)
-            new_state.board.print()
-            print()
+            if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
+                new_state.board.print()
+                print(new_state.board.row_array, new_state.board.col_array)
+                print(global_v)
+            new_state.board.trivial = True
         return new_state
         # TODO
 
@@ -885,7 +930,7 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        return all(x == 0 for x in self.state.board.completed_boats.values())
+        return all(x == 0 for x in state.board.completed_boats.values())
             
 
     def h(self, node: Node):
@@ -904,6 +949,7 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem = Bimaru(board)
     goal_b = depth_first_tree_search(problem)
+    print(global_v)
     goal_b.state.board.print()
     # Imprimir valores adjacentes
     """print(board.get_value(0,0))
