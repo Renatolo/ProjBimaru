@@ -866,15 +866,19 @@ class Board:
     def do_trivial(self):
         while not self.is_wrong and self.trivial:
             if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
+                #print("DEBUG", self.is_wrong, self.trivial)
+                #self.print()
                 self.trivial = False
         self.check_if_wrong()
     
     def fill_with_boat(self, boat):
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
-                if self.get_value(row, col) == '.':
+                #print("DEBUG3:", row, col)
+                if self.get_value(row, col) not in ('w', 'W'):
                     self.put_boat_piece(row, col)
                 else:
+                    #print("DEBUG2:", boat, row, col)
                     self.is_wrong = True
     
       # TODO: outros metodos da classe        
@@ -896,6 +900,7 @@ class Bimaru(Problem):
             actions_array.append("trivial")
         else:
             actions_array = state.board.search_boat_size(state.board.get_biggest_boat_size())
+            #print(actions_array)
         return actions_array
         # TODO
 
@@ -909,19 +914,21 @@ class Bimaru(Problem):
             new_state.board.do_trivial()
         else:
             #DEBUG
-            global global_v
+            """global global_v
             global_v += 1
             if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
-                print("++++++++++++++++", global_v)
+                print("++++++++++++++++", global_v)"""
                 #new_state.board.print()
                 #print(new_state.board.row_array, new_state.board.col_array, action)
-                if global_v == 5000:
-                    exit(1)
+                #if global_v == 5000:
+                #    exit(1)
             new_state.board.fill_with_boat(action)
-            if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
+            """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
                 new_state.board.print()
                 print(new_state.board.row_array, new_state.board.col_array)
-                print(global_v)
+                print(global_v)"""
+            #print("DEBUG:")
+            #state.board.print()
             new_state.board.trivial = True
         return new_state
         # TODO
@@ -949,7 +956,7 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem = Bimaru(board)
     goal_b = depth_first_tree_search(problem)
-    print(global_v)
+    #print(global_v)
     goal_b.state.board.print()
     # Imprimir valores adjacentes
     """print(board.get_value(0,0))
