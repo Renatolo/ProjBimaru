@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 14:
+# 102696 Afonso Palmeira
+# 103906 Renato Marques
 import numpy as np
 import sys
 from sys import stdin
@@ -17,9 +17,6 @@ from search import (
     greedy_search,
     recursive_best_first_search,
 )
-
-#DEBUG:
-global_v = 0
 
 
 class BimaruState:
@@ -94,7 +91,7 @@ class Board:
         for i in self.board:
             for j in i:
                 if (j == 'w'):
-                    print('~', end = '')
+                    print('.', end = '')
                 else:
                     print(j, end = '')
             print()    
@@ -581,9 +578,7 @@ class Board:
                 self.is_wrong = True
             self.put_boat_piece(row, col-2)
         elif adj_pos[1] == 'M':
-            #print("DEBUG5:")
             if self.get_value(row, col+2) in ('w', 'W'):
-                #print("DEBUG5:")
                 self.is_wrong = True
             self.put_boat_piece(row, col+2)
         elif adj_pos[2] == 'M':
@@ -610,9 +605,6 @@ class Board:
     def put_boat_piece(self, row: int, col: int):
         if self.get_value(row, col) != '.':
             return
-        
-        #if row == 9 and col == 3:
-        #    print("DEBUG:")
         
         #places water in corners
         corners = (self.get_value(row-1, col-1), self.get_value(row-1, col+1), self.get_value(row+1, col-1), self.get_value(row+1, col+1))
@@ -732,10 +724,6 @@ class Board:
                         in_boat = False
 
     def check_completed_submarines(self):
-        #DEBUG
-        global global_v
-        if global_v == 1007:
-            print("DEBUG3:")
         for row in range(10):
             for col in range(10):
                 adj_pos = self.adjacent_horizontal_values(row, col) + self.adjacent_vertical_values(row, col)
@@ -895,14 +883,10 @@ class Board:
                 self.is_wrong = True
     
     def do_trivial(self):
-        #print("DEBUG1:")
         while not self.is_wrong and self.trivial:
             if not self.fill_trivial_lines() and not self.fill_completed_lines_with_water() and not self.process_M_list():
-                #print("DEBUG", self.is_wrong, self.trivial)
-                #self.print()
                 self.trivial = False
         self.check_if_wrong()
-        #self.print()
     
     def fill_with_submarine(self, row: int, col: int):
         pos = self.get_value(row, col)
@@ -920,30 +904,21 @@ class Board:
                 self.put_water(row+1, col)
     
     def fill_with_boat(self, boat):
-        #DEBUG
-        global global_v
-        if global_v == 27:
-            print(boat)
         if boat[0] == boat[2] and boat[1] == boat[3]:
             self.fill_submarine(boat[0], boat[1])
             return
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
-                #print("DEBUG3:", row, col)
                 if self.get_value(row, col) not in ('w', 'W'):
                     self.put_boat_piece(row, col)
                 else:
-                    #print("DEBUG2:", boat, row, col)
-                    self.is_wrong = True
-    
-      # TODO: outros metodos da classe        
+                    self.is_wrong = True     
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         self.initial = BimaruState(board)
         self.state = self.initial
-        # TODO
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que pTodem ser executadas a
@@ -955,9 +930,7 @@ class Bimaru(Problem):
             actions_array.append("trivial")
         else:
             actions_array = state.board.search_boat_size(state.board.get_biggest_boat_size())
-            #print(actions_array)
         return actions_array
-        # TODO
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
@@ -968,30 +941,7 @@ class Bimaru(Problem):
         if action == "trivial":
             new_state.board.do_trivial()
         else:
-            #DEBUG
-            global global_v
-            global_v += 1
-            if action == (8, 4, 8, 5) and global_v >= 1005:
-                print("DEBUG:")
-                new_state.board.print()
-                print(global_v)
-            """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
-                print("++++++++++++++++", global_v)"""
-                #new_state.board.print()
-                #print(new_state.board.row_array, new_state.board.col_array, action)
-                #if global_v == 5000:
-                #    exit(1)
             new_state.board.fill_with_boat(action)
-            if action == (8, 4, 8, 5) and global_v >= 1005:
-                new_state.board.print()
-            if global_v > 1200:
-                exit(1)
-            """if (global_v < 500 and action == (3, 1, 3, 2)) or global_v == 10000:
-                new_state.board.print()
-                print(new_state.board.row_array, new_state.board.col_array)
-                print(global_v)"""
-            #print("DEBUG:")
-            #state.board.print()
             new_state.board.trivial = True
         return new_state
         # TODO
@@ -1008,10 +958,7 @@ class Bimaru(Problem):
         # TODO
         pass
 
-    # TODO: outros metodos da classe
-
 if __name__ == "__main__":
-    # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
@@ -1019,143 +966,4 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem = Bimaru(board)
     goal_b = depth_first_tree_search(problem)
-    #print(global_v)
     goal_b.state.board.print()
-    # Imprimir valores adjacentes
-    """print(board.get_value(0,0))
-    print(board.adjacent_vertical_values(3, 3))
-    print(board.adjacent_horizontal_values(3, 3))
-    print(board.adjacent_vertical_values(1, 0))
-    print(board.adjacent_horizontal_values(1, 0))
-    print(board.adjacent_vertical_values(8, 8))
-    """
-    """print(board.completed_boats) #barcos que faltam completar (por tipo de barco)
-    print(board.row_array, board.col_array) #pistas das linhas e colunas
-    print(board.get_biggest_boat_size())"""
-
-    """teste de put_water"""
-    """board.board[7][8] = 'm'
-    board.board[6][8] = 'm'
-    board.put_water(5, 8)
-
-    board.print()
-    print(board.completed_boats)"""
-
-    """teste de put_boat_piece"""
-    """board.put_water(6, 8)
-    board.put_boat_piece(5, 8)
-    board.put_water(3, 8)
-    board.put_boat_piece(4, 8)
-    print(board.board[4][7], board.board[4][9], board.board[6][7], board.board[6][9])
-    print(board.row_array, board.col_array)
-    board.print()
-    print(board.completed_boats)"""
-
-    """teste de put_boat_piece -> correct boat (necessario desligar o put water do parse para funcionar)"""
-    """board.put_boat_piece(6, 8)
-    board.put_boat_piece(5, 8)
-    board.put_boat_piece(2, 0)
-    board.put_boat_piece(1, 5)
-    board.put_boat_piece(1, 7)
-    board.print()
-    print(board.completed_boats)"""
-
-    """teste de check_completed_boats: com barcos identicos ao teste de cima mas por ordem diferente de adicao"""
-    """board.put_boat_piece(2, 0)
-    board.put_boat_piece(1, 5)
-    board.put_boat_piece(1, 7)
-    board.put_boat_piece(6, 8)
-    board.put_boat_piece(5, 8)
-    board.check_completed_boats()
-    board.print()
-    print(board.completed_boats)"""
-
-    """teste de process_submarine: com instancia identica ao teste de cima"""
-    """board.put_boat_piece(2, 0)
-    board.put_boat_piece(1, 5)
-    board.put_boat_piece(1, 7)
-    board.put_boat_piece(5, 2)
-    board.put_boat_piece(6, 2)
-    board.put_boat_piece(8, 2)
-    board.put_boat_piece(9, 2)
-    board.put_boat_piece(5, 4)
-    board.put_boat_piece(6, 4)
-    board.put_boat_piece(5, 6)
-    board.put_boat_piece(6, 8)
-    board.put_boat_piece(5, 8)
-    board.check_completed_boats()
-    board.print()
-    print(board.completed_boats)"""
-
-    """teste de process_M_list"""
-    """board.process_M_list()
-    board.fill_trivial_lines()
-    board.fill_trivial_lines()
-    board.print()
-    print(board.completed_boats)
-    print(board.row_array, board.col_array)"""
-
-    """teste de search_boats_size"""
-    """print(board.search_boat_size(4))"""
-
-    """teste do_trivial"""
-    """board.do_trivial()
-    board.print()
-    print(board.row_array, board.col_array)"""
-
-    """teste de check_boats
-    board.board[7][8] = 'm'
-    board.board[6][8] = 'm'
-    board.board[5][8] = 'm'
-    board.print()
-    board.put_water(4, 8)
-    print("+++++++++++++++++")
-    board.print()
-    print(board.check_boat_vertical(6, 8))
-    print(board.check_boat_vertical(5, 8))"""
-
-    #bimaru = Bimaru(board)
-    #solution = astar_search(bimaru)
-    #print(solution.solution())
-    #print(solution.path_cost)
-    #print(solution)
-    
-    
-"""verificacao de boat piece ter tamanho do maior barco possivel -> completa barco
-maybe fazer um check_uncompleted_boats(size) que ao completar um barco de tamanho k (sendo esse o ultimo desse tamanho)
-    verifica se existe algum de tamanho k-1 incompleto (que passa a ser consideradp completo)
-    Exº:    Imaginando se que se                entao
-    completa um destes barcos de 3              --->
-    ..........                      ..........          ..........
-    .mmm......                      .mmm......          .rml......
-    ..........                      ..........          ..........
-    ..........                      ..........          ..........
-    ....m.....                      ....m.....          ....t.....
-    ....m.....                      ....m.....          ....m.....
-    ....m.....                      ....m.....          ....b.....
-    ..........                      ..........          ..........
-    ......mmm.                      .....rmml.          .....rmml.
-    ..........                      ..........          ..........
-
-^esta funcao devera ser uma das actions isolada que percorre o tabuleiro em busca de barcos completos em tamanho mas nao em formato
-que percorre um barco e transforma as pontas em cantos de barco (l,r,t,b)
-ou entao fazer com que o check boat devolva as posicoes das pontas ou que ao percorrer o barco complete as pontas
-
-(done)put_boat_piece: se houver um M adjacente: tentar preencher do outro lado do M
-
-(done)put_boat_piece: se ao meter uma peca de barco se completa uma linha ou uma coluna: preencher o resto de agua
-
-(done)fazer funcao que itera por todas as linhas e colunas observando se o numero de posicoes por preencher corresponde ao
-numero de posicoes de barco que ainda faltam nessa row/col e, se tal se verificar, preencher a row/col de pedacos de
-barco
-
-(done)put_boat_piece: ao completar o barco verificar se isso completa os barcos desse tamanho -> barcos de tamanho inferior podem
-ficar completos por consequencia
-
-(done? -> feito por consequencia dos pieces colocados anteriormente) check_corner: se se torna num corner -> meter agua nos adjacentes necessarios
-
-(done)fazer funcao que procura sitios possiveis para o barco de maior tamanho possivel
-
-procurar sitios que tornem o board wrong
-
-preencher nome e grupo"""
