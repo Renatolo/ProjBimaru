@@ -18,6 +18,8 @@ from search import (
     recursive_best_first_search,
 )
 
+"""DEBUG: global_v = 0"""
+
 
 class BimaruState:
     state_id = 0
@@ -43,6 +45,12 @@ class Board:
         self.board = np.full((10, 10), '.', dtype=str)
         self.is_wrong = False #variable to keep track if board reached a wrong/impossible state
         self.trivial = True #keeps track if board can use trivial method
+        self.completed_boats = {}
+        self.row_array = []
+        self.col_array = []
+        self.empty_row_array = []
+        self.empty_col_array = []
+        self.M_list = []
         np.set_printoptions(formatter={'str_kind': lambda x: x})
         
     def get_value(self, row: int, col: int) -> str:
@@ -86,7 +94,18 @@ class Board:
                     print('~', end = '')
                 else:
                     print(j, end = '')
-            print()       
+            print()    
+    
+    def copy(self):
+        new_copy = Board()
+        new_copy.is_wrong = self.is_wrong
+        new_copy.trivial = self.trivial
+        new_copy.board = self.board.copy()
+        new_copy.completed_boats = self.completed_boats.copy()
+        new_copy.row_array = self.row_array.copy()
+        new_copy.col_array = self.col_array.copy()
+        new_copy.empty_row_array = self.empty_row_array.copy()
+        new_copy.empty_col_array = self.empty_col_array.copy()
         
 
     @staticmethod
@@ -112,7 +131,6 @@ class Board:
         board.empty_row_array = 10*[10] 
         board.empty_col_array = 10*[10] 
         num_hints = int(lines[2][0])
-        board.M_list = []
         
         for i in range(3, 3 + num_hints):
             row = int(lines[i][1])
@@ -735,6 +753,8 @@ class Board:
     def check_possible_boat_horiz(self, row: int, begin: int, end: int):
         if self.get_value(row, begin-1) not in ('w', 'W', '.') or self.get_value(row, end+1) not in ('w', 'W', '.') or self.get_value(row, begin) == 'M' or self.get_value(row, end) == 'M':
             return False, None
+        elif self.get_value(row, begin) in ('l', 'L') and self.get_value(row, end) in ('r', 'R'):
+            return False, None
         for col in range(begin, end+1):
             adj_vert = self.adjacent_vertical_values(row, col)
             if adj_vert[0] not in ('w', 'W', '.') or adj_vert[1] not in ('w', 'W', '.'):
@@ -769,6 +789,8 @@ class Board:
     
     def check_possible_boat_vert(self, col: int, begin: int, end: int):
         if self.get_value(begin-1, col) not in ('w', 'W', '.') or self.get_value(end+1, col) not in ('w', 'W', '.') or self.get_value(begin, col) == 'M' or self.get_value(begin, col) == 'M':
+            return False, None
+        elif self.get_value(begin, col) in ('t', 'T') and self.get_value(end, col) in ('b', 'B'):
             return False, None
         for row in range(begin, end+1):
             adj_horiz = self.adjacent_horizontal_values(row, col)
@@ -811,7 +833,6 @@ class Board:
                 self.trivial = False
     
     def fill_with_boat(self, boat):
-        print(boat)
         for row in range(boat[0], boat[2]+1):
             for col in range(boat[1], boat[3]+1):
                 self.put_boat_piece(row, col)
@@ -834,7 +855,8 @@ class Bimaru(Problem):
         elif self.state.board.trivial:
             actions_array.append("trivial")
         else:
-            actions_array.append(self.state.board.search_boat_size(self.state.board.get_biggest_boat_size()))
+            actions_array = self.state.board.search_boat_size(self.state.board.get_biggest_boat_size())
+            print(actions_array)
         return actions_array
         # TODO
 
@@ -843,12 +865,20 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        new_state = BimaruState(state.board)
+        new_state = BimaruState(state.board.copy())
+        print(new_state.board)
         if action == "trivial":
             new_state.board.do_trivial()
-            new_state.board.print()
         else:
+            """global global_v
+            DEBUG: global_v += 1
+            if global_v == 100000:
+                new_state.board.print()
+                exit(1)"""
             new_state.board.fill_with_boat(action)
+            new_state.board.print()
+            print()
+        return new_state
         # TODO
 
     def goal_test(self, state: BimaruState):
@@ -865,7 +895,6 @@ class Bimaru(Problem):
 
     # TODO: outros metodos da classe
 
-
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
@@ -875,7 +904,6 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem = Bimaru(board)
     goal_b = depth_first_tree_search(problem)
-    print()
     goal_b.state.board.print()
     # Imprimir valores adjacentes
     """print(board.get_value(0,0))
